@@ -1,5 +1,5 @@
 # Gradle build artifacts
-.gradle/
+.gradle/**/*
 gradle/
 build/
 
@@ -9,3 +9,4 @@ build/
 # IntelliJ Idea
 out/
 
+/.idea/
