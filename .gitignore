@@ -1,8 +1,11 @@
 # Gradle build artifacts
 .gradle/
+gradle/
+build/
 
 # macOS Finder
 .DS_Store
 
 # IntelliJ Idea
 out/
+
