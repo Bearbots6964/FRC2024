@@ -10,3 +10,16 @@ build/
 out/
 
 /.idea/
+/.run/Build & Deploy Robot.run.xml
+/.run/Build & Deploy Robot for Debugging.run.xml
+/.run/Build & Run Simulate Java.run.xml
+/.run/Build Robot.run.xml
+/.run/Clean.run.xml
+/.run/Clean Build & Deploy Robot.run.xml
+/.run/Clean Build & Deploy Robot for Debugging.run.xml
+/.run/Clean Build & Run Simulate Java.run.xml
+/.run/Clean Build Robot.run.xml
+/.run/Debug Robot via IP.run.xml
+/.run/Debug Robot via USB.run.xml
+/.run/Launch Shuffleboard.run.xml
+/.run/Launch SmartDashboard.run.xml
