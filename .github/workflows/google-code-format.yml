@@ -3,8 +3,6 @@ name: Format code
 on:
   push:
     branches: [ prod, staging ]
-  pull_request:
-    branches: [ main, staging ]
 
 jobs:
 
