@@ -22,17 +22,23 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v4
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
 
-    # Declares the repository safe and not under dubious ownership.
-    - name: Add repository to git safe directories
-      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      # Declares the repository safe and not under dubious ownership.
+      - name: Add repository to git safe directories
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
-    # Grant execute permission for gradlew
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      # Grant execute permission for gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    # Runs a single command using the runners shell
-    - name: Compile and run tests on robot code
-      run: ./gradlew build
+        # Setup Gradle to generate and submit dependency graphs
+      - name: Setup Gradle to generate and submit dependency graphs
+        uses: gradle/actions/setup-gradle@v3-beta
+        with:
+          dependency-graph: generate-and-submit
+
+      # Runs a single command using the runners shell
+      - name: Compile and run tests on robot code
+        run: ./gradlew build
