@@ -23,3 +23,5 @@ out/
 /.run/Debug Robot via USB.run.xml
 /.run/Launch Shuffleboard.run.xml
 /.run/Launch SmartDashboard.run.xml
+
+src/main/java/frc/robot/BuildConstants.java
