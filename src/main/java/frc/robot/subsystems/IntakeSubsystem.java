@@ -1,5 +1,9 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -28,16 +32,23 @@ public class IntakeSubsystem extends SubsystemBase {
     return INSTANCE;
   }
 
-  /**
-   * Creates a new instance of this IntakeSubsystem. This constructor is private since this class is
-   * a Singleton. Code should use the {@link #getInstance()} method to get the singleton instance.
-   */
+  public CANSparkMax intakeMotor;
   private IntakeSubsystem() {
-    // TODO: Set the default command, if any, for this subsystem by calling
-    // setDefaultCommand(command)
-    //       in the constructor or in the robot coordination class, such as RobotContainer.
-    //       Also, you can call addChild(name, sendableChild) to associate sendables with the
-    // subsystem
-    //       such as SpeedControllers, Encoders, DigitalInputs, etc.
+   intakeMotor = new CANSparkMax(8, MotorType.kBrushless);
+    intakeMotor.setIdleMode(IdleMode.kBrake);
+    intakeMotor.setSmartCurrentLimit(20);
+    intakeMotor.burnFlash();
+  }
+
+  public void SuckOut() {
+    intakeMotor.set(0.75);
+  }
+
+  public void SuckIn() {
+    intakeMotor.set(-0.75);
+  }
+
+  public void Stop() {
+    intakeMotor.set(0);
   }
 }
