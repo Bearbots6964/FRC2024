@@ -2,7 +2,7 @@ name: Format code
 
 on:
   push:
-    branches: [ prod, staging ]
+    branches: [ main ]
 
 jobs:
 
