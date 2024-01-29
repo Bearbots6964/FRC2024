@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -13,6 +14,9 @@ public class IntakeSubsystem extends SubsystemBase {
    * method to get the single instance (rather than trying to construct an instance of this class.)
    */
   private static final IntakeSubsystem INSTANCE = new IntakeSubsystem();
+
+  // A limit switch to determine whether the intake has a note or not.
+  DigitalInput limitSwitch = new DigitalInput(0);
 
   /**
    * Returns the Singleton instance of this IntakeSubsystem. This static method should be used,
