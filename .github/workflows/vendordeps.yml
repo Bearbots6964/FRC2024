@@ -1,0 +1,36 @@
+name: Update vendordeps
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Declares the repository safe and not under dubious ownership.
+      - name: Add repository to git safe directories
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      # Grant execute permission for gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Update vendordeps
+        run: |
+          ./gradlew vendordep --url=https://github.com/Mechanical-Advantage/AdvantageKit/releases/latest/download/AdvantageKit.json
+          ./gradlew vendordep --url=https://SleipnirGroup.github.io/ChoreoLib/dep/ChoreoLib.json
+          ./gradlew vendordep --url=https://dev.studica.com/releases/2024/NavX.json
+          ./gradlew vendordep --url=https://software-metadata.revrobotics.com/REVLib-2024.json
+          ./gradlew vendordep --url=https://broncbotz3481.github.io/YAGSL-Lib/yagsl/yagsl.json
+
+      - name: Commit and create PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore(deps): update dependencies'
+          branch: chore-deps/update-dependencies
+          branch-suffix: timestamp
+          title: 'chore(deps): update dependencies'
+          assignees: TheGamer1002, NyxAlexandra
