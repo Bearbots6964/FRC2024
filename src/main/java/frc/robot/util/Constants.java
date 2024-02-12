@@ -1,4 +1,3 @@
 package frc.robot.util;
 
-public class Constants {
-}
+public class Constants {}
