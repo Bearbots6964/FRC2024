@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
-public class ShootCommand extends InstantCommand {
+public class ShootCommand extends Command {
   private final ShooterSubsystem shooterSubsystem = ShooterSubsystem.getInstance();
   private final VisionSubsystem visionSubsystem = VisionSubsystem.getInstance();
 
