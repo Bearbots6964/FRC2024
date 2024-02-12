@@ -1,6 +1,15 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkFlex;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.Constants;
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
+
+import java.util.function.DoubleSupplier;
+
+import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -13,6 +22,15 @@ public class ShooterSubsystem extends SubsystemBase {
    * method to get the single instance (rather than trying to construct an instance of this class.)
    */
   private static final ShooterSubsystem INSTANCE = new ShooterSubsystem();
+
+  private CANSparkFlex lowerMotor, upperMotor;
+
+  // auto log the velocity of the shooter in rpm
+  @AutoLogOutput(key = "Shooter/Velocity")
+  public double getVelocity() {
+    return lowerMotor.getEncoder().getVelocity();
+  }
+
 
   /**
    * Returns the Singleton instance of this ShooterSubsystem. This static method should be used,
@@ -30,11 +48,20 @@ public class ShooterSubsystem extends SubsystemBase {
    * instance.
    */
   private ShooterSubsystem() {
-    // TODO: Set the default command, if any, for this subsystem by calling
-    // setDefaultCommand(command)
-    //       in the constructor or in the robot coordination class, such as RobotContainer.
-    //       Also, you can call addChild(name, sendableChild) to associate sendables with the
-    // subsystem
-    //       such as SpeedControllers, Encoders, DigitalInputs, etc.
+    lowerMotor = new CANSparkFlex(Constants.MotorConstants.LOWER_SHOOTER_MOTOR,kBrushless);
+    upperMotor = new CANSparkFlex(Constants.MotorConstants.UPPER_SHOOTER_MOTOR, kBrushless);
+    upperMotor.follow(lowerMotor, true);
+
+    // Set the motors to coast mode
+    lowerMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+    upperMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+  }
+
+  public void shoot() {
+    lowerMotor.set(Constants.MotorConstants.SHOOTER_SPEED);
+  }
+
+  public void stop() {
+    lowerMotor.set(0);
   }
 }
