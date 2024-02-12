@@ -138,6 +138,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return swerveDrive.kinematics;
   }
 
+  // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/pose.html
   /**
    * Resets odometry to the given pose. Gyro angle and module positions do not need to be reset when
    * calling this method. However, if either gyro angle or module position is reset, this must be
