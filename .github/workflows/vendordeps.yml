@@ -25,6 +25,9 @@ jobs:
           ./gradlew vendordep --url=https://dev.studica.com/releases/2024/NavX.json
           ./gradlew vendordep --url=https://software-metadata.revrobotics.com/REVLib-2024.json
           ./gradlew vendordep --url=https://3015rangerrobotics.github.io/pathplannerlib/PathplannerLib.json
+          ./gradlew vendordep --url=https://maven.ctr-electronics.com/release/com/ctre/phoenix/Phoenix5-frc2024-latest.json
+          ./gradlew vendordep --url=https://maven.ctr-electronics.com/release/com/ctre/phoenix6/latest/Phoenix6-frc2024-latest.json
+          ./gradlew vendordep --url=https://frcsdk.reduxrobotics.com/ReduxLib_2024.json
 
       - name: Commit and create PR
         uses: peter-evans/create-pull-request@v6
