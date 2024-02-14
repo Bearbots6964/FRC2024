@@ -34,10 +34,17 @@ public final class Constants {
 
   public static class MotorConstants {
 
-    // Motor Constants
+    // Shooter Motor Constants
     public static final int LOWER_SHOOTER_MOTOR = 13;
     public static final int UPPER_SHOOTER_MOTOR = 12;
     public static final double SHOOTER_SPEED = 0.70;
+    // Arm Motor Constants
+    public static final int LEFT_ARM_MOTOR = 14; // Currently the ids are arbitrary.
+    public static final int RIGHT_ARM_MOTOR = 15; // They will need to be adjusted to reflect the actual connected ports
+    // Intake Constants
+    public static final int INTAKE_MOTOR = 10;
+    public static final int CEREALIZER_MOTOR = 11;
+    public static final double INTAKE_SPEED = 0.45;
   }
 
   public static class ArmMotorConstants {
