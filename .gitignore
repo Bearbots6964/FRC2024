@@ -36,3 +36,4 @@ src/main/java/frc/robot/BuildConstants.java
 .gradle/8.5/checksums/sha1-checksums.bin
 .gradle/8.5/fileHashes/fileHashes.lock
 .gradle/buildOutputCleanup/buildOutputCleanup.lock
+/.DS_Store
