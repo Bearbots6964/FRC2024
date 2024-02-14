@@ -72,8 +72,8 @@ public class ArmSubsystem extends SubsystemBase {
     //       Also, you can call addChild(name, sendableChild) to associate sendables with the
     // subsystem
     //       such as SpeedControllers, Encoders, DigitalInputs, etc.
-    leftMotor = new CANSparkMax(Constants.ArmMotorConstants.LEFT_ARM_MOTOR, MotorType.kBrushless);
-    rightMotor = new CANSparkMax(Constants.ArmMotorConstants.RIGHT_ARM_MOTOR, MotorType.kBrushless);
+    leftMotor = new CANSparkMax(Constants.MotorConstants.LEFT_ARM_MOTOR, MotorType.kBrushless);
+    rightMotor = new CANSparkMax(Constants.MotorConstants.RIGHT_ARM_MOTOR, MotorType.kBrushless);
 
     // The right motor will mirror the leader, but it will be inverted
     rightMotor.follow(leftMotor, true);
