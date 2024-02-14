@@ -11,6 +11,11 @@ public final class Constants {
   public static final Matter CHASSIS = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
   public static final double LOOP_TIME = 0.13; //s, 20ms + 110ms sprk max velocity lag
 
+  public static final class PositionConstants {
+    public static final Translation3d ORIGIN_TO_BACK_LIMELIGHT = new Translation3d(Units.inchesToMeters(-0.25), Units.inchesToMeters(0.25), Units.inchesToMeters(18.1171875));
+    public static final Translation3d ORIGIN_TO_NAVX = new Translation3d(Units.inchesToMeters(-7), Units.inchesToMeters(0), Units.inchesToMeters(6.5));
+  }
+
   public static final class AutonomousConstants {
 
     public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.7, 0, 0);
