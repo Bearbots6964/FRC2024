@@ -46,11 +46,4 @@ public final class Constants {
     public static final int CEREALIZER_MOTOR = 11;
     public static final double INTAKE_SPEED = 0.45;
   }
-
-  public static class ArmMotorConstants {
-
-    // Arm Motor Constants
-    public static final int LEFT_ARM_MOTOR = 14; // Currently the ids are arbitruary. 
-    public static final int RIGHT_ARM_MOTOR = 15; // They will need to be adjusted to reflect the actual connected ports
-  }
 }
