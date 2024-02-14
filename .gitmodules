@@ -1,0 +1,3 @@
+[submodule "YAGSL"]
+	path = YAGSL
+	url = https://github.com/TheGamer1002/YAGSL
