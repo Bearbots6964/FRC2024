@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,7 +14,6 @@ import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveDriveConfiguration;
 import swervelib.parser.SwerveParser;
-import edu.wpi.first.math.trajectory.Trajectory;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,11 +31,6 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   private static final SwerveSubsystem INSTANCE;
 
-  private SwerveDrive swerveDrive;
-
-  // TODO: Change this to be the actual maximum speed of the robot.
-  private double maximumSpeed = Units.feetToMeters(14.5);
-
   // static INSTANCE = new SwerveSubsystem();
   static {
     try {
@@ -45,15 +40,10 @@ public class SwerveSubsystem extends SubsystemBase {
     }
   }
 
-  /**
-   * Returns the Singleton instance of this SwerveSubsystem. This static method should be used,
-   * rather than the constructor, to get the single instance of this class. For example: {@code
-   * SwerveSubsystem.getInstance();}
-   */
-  @SuppressWarnings("WeakerAccess")
-  public static SwerveSubsystem getInstance() {
-    return INSTANCE;
-  }
+  private final SwerveDrive swerveDrive;
+
+  // TODO: Change this to be the actual maximum speed of the robot.
+  private final double maximumSpeed = Units.feetToMeters(14.5);
 
   /**
    * Creates a new instance of this SwerveSubsystem. This constructor is private since this class is
@@ -66,10 +56,24 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
+   * Returns the Singleton instance of this SwerveSubsystem. This static method should be used,
+   * rather than the constructor, to get the single instance of this class. For example: {@code
+   * SwerveSubsystem.getInstance();}
+   */
+  @SuppressWarnings("WeakerAccess")
+  public static SwerveSubsystem getInstance() {
+    return INSTANCE;
+  }
+
+  public SwerveDrive getSwerveDrive() {
+    return swerveDrive;
+  }
+
+  /**
    * Command to drive the robot using translative values and heading as angular velocity.
    *
-   * @param translationX Translation in the X direction. Cubed for smoother controls.
-   * @param translationY Translation in the Y direction. Cubed for smoother controls.
+   * @param translationX     Translation in the X direction. Cubed for smoother controls.
+   * @param translationY     Translation in the Y direction. Cubed for smoother controls.
    * @param angularRotationX Angular velocity of the robot to set. Cubed for smoother controls.
    * @return Drive command.
    */
@@ -94,13 +98,13 @@ public class SwerveSubsystem extends SubsystemBase {
    * closed-loop velocity control for the wheel velocities. Also has field- and robot-relative
    * modes, which affect how the translation vector is used.
    *
-   * @param translation {@link Translation2d} that is the commanded linear velocity of the robot, in
-   *     meters per second. In robot-relative mode, positive x is torwards the bow (front) and
-   *     positive y is torwards port (left). In field-relative mode, positive x is away from the
-   *     alliance wall (field North) and positive y is torwards the left wall when looking through
-   *     the driver station glass (field West).
-   * @param rotation Robot angular rate, in radians per second. CCW positive. Unaffected by
-   *     field/robot relativity.
+   * @param translation   {@link Translation2d} that is the commanded linear velocity of the robot, in
+   *                      meters per second. In robot-relative mode, positive x is torwards the bow (front) and
+   *                      positive y is torwards port (left). In field-relative mode, positive x is away from the
+   *                      alliance wall (field North) and positive y is torwards the left wall when looking through
+   *                      the driver station glass (field West).
+   * @param rotation      Robot angular rate, in radians per second. CCW positive. Unaffected by
+   *                      field/robot relativity.
    * @param fieldRelative Drive mode. True for field-relative, false for robot-relative.
    */
   public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
@@ -109,6 +113,26 @@ public class SwerveSubsystem extends SubsystemBase {
         rotation,
         fieldRelative,
         false); // Open loop is disabled since it shouldn't be used most of the time.
+  }
+
+  /**
+   * The primary method for controlling the drivebase. Takes a {@link Translation2d} and a rotation rate, and calculates
+   * and commands module states accordingly. Can use either open-loop or closed-loop velocity control for the wheel
+   * velocities. Also has field- and robot-relative modes, which affect how the translation vector is used.
+   *
+   * @param translation   {@link Translation2d} that is the commanded linear velocity of the robot, in meters per
+   *                      second. In robot-relative mode, positive x is torwards the bow (front) and positive y is
+   *                      torwards port (left). In field-relative mode, positive x is away from the alliance wall (field
+   *                      North) and positive y is torwards the left wall when looking through the driver station glass
+   *                      (field West).
+   * @param rotation      Robot angular rate, in radians per second. CCW positive. Unaffected by field/robot
+   *                      relativity.
+   * @param fieldRelative Drive mode. True for field-relative, false for robot-relative.
+   * @param isOpenLoop    Whether to use closed-loop velocity control. Set to true to disable closed-loop.
+   */
+  public void drive(
+      Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
+    swerveDrive.drive(translation, rotation, fieldRelative, isOpenLoop);
   }
 
   /**
@@ -139,6 +163,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/pose.html
+
   /**
    * Resets odometry to the given pose. Gyro angle and module positions do not need to be reset when
    * calling this method. However, if either gyro angle or module position is reset, this must be
@@ -206,8 +231,8 @@ public class SwerveSubsystem extends SubsystemBase {
    * Get the chassis speeds based on controller input of 2 joysticks. One for speeds in which
    * direction. The other for the angle of the robot.
    *
-   * @param xInput X joystick input for the robot to move in the X direction.
-   * @param yInput Y joystick input for the robot to move in the Y direction.
+   * @param xInput   X joystick input for the robot to move in the X direction.
+   * @param yInput   Y joystick input for the robot to move in the Y direction.
    * @param headingX X joystick which controls the angle of the robot.
    * @param headingY Y joystick which controls the angle of the robot.
    * @return {@link ChassisSpeeds} which can be sent to th Swerve Drive.
@@ -226,7 +251,7 @@ public class SwerveSubsystem extends SubsystemBase {
    *
    * @param xInput X joystick input for the robot to move in the X direction.
    * @param yInput Y joystick input for the robot to move in the Y direction.
-   * @param angle The angle in as a {@link Rotation2d}.
+   * @param angle  The angle in as a {@link Rotation2d}.
    * @return {@link ChassisSpeeds} which can be sent to th Swerve Drive.
    */
   public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, Rotation2d angle) {
@@ -272,7 +297,9 @@ public class SwerveSubsystem extends SubsystemBase {
     return swerveDrive.swerveDriveConfiguration;
   }
 
-  /** Lock the swerve drive to prevent it from moving. */
+  /**
+   * Lock the swerve drive to prevent it from moving.
+   */
   public void lock() {
     swerveDrive.lockPose();
   }
@@ -284,5 +311,9 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public Rotation2d getPitch() {
     return swerveDrive.getPitch();
+  }
+
+  public double getMaximumSpeed() {
+    return maximumSpeed;
   }
 }

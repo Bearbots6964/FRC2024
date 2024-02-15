@@ -17,12 +17,18 @@ public class ArmSubsystem extends SubsystemBase {
   // constructor must appear before the "INSTANCE" variable so that they are initialized
   // before the constructor is called when the "INSTANCE" variable initializes.
 
-  private CANSparkMax leftMotor; // Lead motor
-  private CANSparkMax rightMotor; // Follow Motor
+  private final CANSparkMax leftMotor; // Lead motor
+  private final CANSparkMax rightMotor; // Follow Motor
 
-  private SparkPIDController pidController;
-  private SparkAbsoluteEncoder encoder;
-  private double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput; // We'll probably want to put these in the constants class later
+  private final SparkPIDController pidController;
+  private final SparkAbsoluteEncoder encoder;
+  private final double kP;
+  private final double kI;
+  private final double kD;
+  private final double kIz;
+  private final double kFF;
+  private final double kMaxOutput;
+  private final double kMinOutput; // We'll probably want to put these in the constants class later
   private double maxRange; // amount of revolutions (or other unit) it takes to move the arm from min to max
 
 

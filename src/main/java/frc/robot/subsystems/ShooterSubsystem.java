@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkFlex;
+import com.revrobotics.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.Constants;
 import org.littletonrobotics.junction.AutoLog;
@@ -23,7 +22,27 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   private static final ShooterSubsystem INSTANCE = new ShooterSubsystem();
 
-  private CANSparkFlex lowerMotor, upperMotor;
+  private final CANSparkFlex lowerMotor;
+  private final CANSparkFlex upperMotor;
+
+  @AutoLogOutput
+  private final double P;
+  @AutoLogOutput
+  private final double I;
+  @AutoLogOutput
+  private final double D;
+  @AutoLogOutput
+  private final double Iz;
+  @AutoLogOutput
+  private final double FF;
+  @AutoLogOutput
+  private final double maxOutput;
+  @AutoLogOutput
+  private final double minOutput;
+  @AutoLogOutput
+  private final double maxRPM;
+  private final SparkPIDController pidController;
+  private final RelativeEncoder encoder;
 
   // auto log the velocity of the shooter in rpm
   @AutoLogOutput(key = "Shooter/Velocity")
@@ -55,11 +74,31 @@ public class ShooterSubsystem extends SubsystemBase {
     // Set the motors to coast mode
     lowerMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
     upperMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+    pidController = lowerMotor.getPIDController();
+    encoder = lowerMotor.getEncoder();
+
+    // Set the PID constants
+    P = Constants.ShooterConstants.P;
+    I = Constants.ShooterConstants.I;
+    D = Constants.ShooterConstants.D;
+    Iz = Constants.ShooterConstants.Iz;
+    FF = Constants.ShooterConstants.FF;
+    maxOutput = Constants.ShooterConstants.MAX_OUTPUT;
+    minOutput = Constants.ShooterConstants.MIN_OUTPUT;
+    maxRPM = Constants.ShooterConstants.MAX_RPM;
+
+    pidController.setP(P);
+    pidController.setI(I);
+    pidController.setD(D);
+    pidController.setIZone(Iz);
+    pidController.setFF(FF);
+    pidController.setOutputRange(minOutput, maxOutput);
   }
 
   public void shoot() {
-    lowerMotor.set(Constants.MotorConstants.SHOOTER_SPEED);
+    pidController.setReference(maxRPM, CANSparkBase.ControlType.kSmartVelocity);
   }
+
 
   public void stop() {
     lowerMotor.set(0);
