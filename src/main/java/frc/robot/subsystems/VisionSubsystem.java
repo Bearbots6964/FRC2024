@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.util.LimelightHelpers;
 
 public class VisionSubsystem extends SubsystemBase {
 
@@ -35,5 +38,11 @@ public class VisionSubsystem extends SubsystemBase {
     //       Also, you can call addChild(name, sendableChild) to associate sendables with the
     // subsystem
     //       such as SpeedControllers, Encoders, DigitalInputs, etc.
+  }
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+    //SwerveSubsystem.addVisionMeasurement(LimelightHelpers.getBotPose2d("back-limelight"), Timer.getFPGATimestamp() - LimelightHelpers.getLatency_Capture("back-limelight") - LimelightHelpers.getLatency_Pipeline("back-limelight") );
   }
 }

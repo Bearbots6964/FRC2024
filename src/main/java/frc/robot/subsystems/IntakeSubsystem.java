@@ -32,11 +32,13 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void suckOut() {
-    intakeMotor.set(0.75);
+    intakeMotor.set(Constants.MotorConstants.INTAKE_SPEED);
+    cerealizerMotor.set(Constants.MotorConstants.INTAKE_SPEED);
   }
 
   public void suckIn() {
-    intakeMotor.set(-0.75);
+    intakeMotor.set(-Constants.MotorConstants.INTAKE_SPEED);
+    cerealizerMotor.set(-Constants.MotorConstants.INTAKE_SPEED);
   }
 
   public void stop() {

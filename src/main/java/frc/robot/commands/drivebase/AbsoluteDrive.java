@@ -1,6 +1,8 @@
-package frc.robot.commands;
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
-import edu.wpi.first.wpilibj2.command.Command;
+package frc.robot.commands.drivebase;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -9,13 +11,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.util.Constants;
 import frc.robot.subsystems.SwerveSubsystem;
-import java.util.List;
-import java.util.function.DoubleSupplier;
 import swervelib.SwerveController;
 import swervelib.math.SwerveMath;
 
-public class DriveCommand extends Command {
+import java.util.List;
+import java.util.function.DoubleSupplier;
 
+/**
+ * An example command that uses an example subsystem.
+ */
+public class AbsoluteDrive extends Command
+{
 
   private final SwerveSubsystem swerve;
   private final DoubleSupplier  vX, vY;
@@ -42,7 +48,7 @@ public class DriveCommand extends Command {
    *                          robot coordinate system, this is along the same axis as vX.  Should range from -1 to 1
    *                          with no deadband. Positive is away from the alliance wall.
    */
-  public DriveCommand(SwerveSubsystem swerve, DoubleSupplier vX, DoubleSupplier vY, DoubleSupplier headingHorizontal,
+  public AbsoluteDrive(SwerveSubsystem swerve, DoubleSupplier vX, DoubleSupplier vY, DoubleSupplier headingHorizontal,
                        DoubleSupplier headingVertical)
   {
     this.swerve = swerve;
@@ -67,8 +73,8 @@ public class DriveCommand extends Command {
 
     // Get the desired chassis speeds based on a 2 joystick module.
     ChassisSpeeds desiredSpeeds = swerve.getTargetSpeeds(vX.getAsDouble(), vY.getAsDouble(),
-        headingHorizontal.getAsDouble(),
-        headingVertical.getAsDouble());
+                                                         headingHorizontal.getAsDouble(),
+                                                         headingVertical.getAsDouble());
 
     // Prevent Movement After Auto
     if (initRotation)
@@ -88,8 +94,8 @@ public class DriveCommand extends Command {
     // Limit velocity to prevent tippy
     Translation2d translation = SwerveController.getTranslation2d(desiredSpeeds);
     translation = SwerveMath.limitVelocity(translation, swerve.getFieldVelocity(), swerve.getPose(),
-        Constants.LOOP_TIME, Constants.ROBOT_MASS, List.of(Constants.CHASSIS),
-        swerve.getSwerveDriveConfiguration());
+                                           Constants.LOOP_TIME, Constants.ROBOT_MASS, List.of(Constants.CHASSIS),
+                                           swerve.getSwerveDriveConfiguration());
     SmartDashboard.putNumber("LimitedTranslation", translation.getX());
     SmartDashboard.putString("Translation", translation.toString());
 
@@ -110,4 +116,6 @@ public class DriveCommand extends Command {
   {
     return false;
   }
+
+
 }
