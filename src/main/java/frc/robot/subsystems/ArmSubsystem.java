@@ -33,15 +33,15 @@ public class ArmSubsystem extends SubsystemBase {
 
 
   /**
-   * The Singleton instance of this ShooterSubsystem. Code should use the {@link #getInstance()}
+   * The Singleton instance of this ArmSubsystem. Code should use the {@link #getInstance()}
    * method to get the single instance (rather than trying to construct an instance of this class.)
    */
   private static final ArmSubsystem INSTANCE = new ArmSubsystem();
 
   /**
-   * Returns the Singleton instance of this ShooterSubsystem. This static method should be used,
+   * Returns the Singleton instance of this ArmSubsystem. This static method should be used,
    * rather than the constructor, to get the single instance of this class. For example: {@code
-   * ShooterSubsystem.getInstance();}
+   * ArmSubsystem.getInstance();}
    */
   @SuppressWarnings("WeakerAccess")
   public static ArmSubsystem getInstance() {
@@ -84,7 +84,7 @@ public class ArmSubsystem extends SubsystemBase {
 
 
   /**
-   * Creates a new instance of this ShooterSubsystem. This constructor is private since this class
+   * Creates a new instance of this ArmSubsystem. This constructor is private since this class
    * is a Singleton. Code should use the {@link #getInstance()} method to get the singleton
    * instance.
    */
