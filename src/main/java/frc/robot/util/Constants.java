@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import frc.robot.subsystems.ShooterSubsystem;
 import swervelib.math.Matter;
 
 public final class Constants {
@@ -15,23 +14,64 @@ public final class Constants {
   public static final double LOOP_TIME = 0.13; //s, 20ms + 110ms sprk max velocity lag
 
   public static final boolean tuningMode = false;
+
   public static final class ShooterConstants {
 
-    public static final double P = 0;
-    public static final double I = 0;
+    public static final double P = 5e-5;
+    public static final double I = 1e-6;
     public static final double D = 0;
     public static final double Iz = 0;
-    public static final double FF = 0;
+    public static final double FF = 0.000156;
     public static final double MAX_OUTPUT = 1;
     public static final double MIN_OUTPUT = -1;
     public static final double MAX_RPM = 5700;
+    public static final double MAX_VELOCITY = 2000;
+    public static final double MAX_ACCELERATION = 1500;
 
+
+    public static final double WHEEL_DIAMETER = 4; // inches
+
+  }
+
+  public static final Mode currentMode = Mode.REAL;
+
+  public static enum Mode {
+    /**
+     * Running on a real robot.
+     */
+    REAL,
+
+    /**
+     * Running a physics simulator.
+     */
+    SIM,
+
+    /**
+     * Replaying from a log file.
+     */
+    REPLAY
   }
 
   public static final class PositionConstants {
     public static final Pose3d ORIGIN_TO_BACK_LIMELIGHT = new Pose3d(Units.inchesToMeters(-0.25), Units.inchesToMeters(0.25), Units.inchesToMeters(18.1171875), new Rotation3d(0, 0, Math.PI));
 
     public static final Translation3d ORIGIN_TO_NAVX = new Translation3d(Units.inchesToMeters(-7), Units.inchesToMeters(0), Units.inchesToMeters(6.5));
+  }
+  public static final class IntakeConstants {
+    public static final double HEIGHT_FROM_GROUND = 4.0; // inches
+    public static final double CIRCUMFERENCE = HEIGHT_FROM_GROUND * 2 * Math.PI; // inches
+    public static final double P = 5e-5;
+    public static final double I = 1e-6;
+    public static final double D = 0;
+    public static final double Iz = 0;
+    public static final double FF = 0.000156;
+    public static final double MAX_OUTPUT = 1;
+    public static final double MIN_OUTPUT = -1;
+    public static final double MAX_RPM = 240; // 4 rotations per second is the max. Notes are expensive enough as it is.
+    public static final double MAX_VELOCITY = 240; // I don't know what these do but fuck it we ball
+    public static final double MAX_ACCELERATION = 120;
+    public static final double INTAKE_SPEED = 3;
+    public static final double CEREALIZER_SPEED = 3;
   }
 
   public static final class AutonomousConstants {

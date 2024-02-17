@@ -1,12 +1,9 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import com.revrobotics.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.Constants;
-import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
-
-import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
@@ -25,22 +22,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private final CANSparkFlex lowerMotor;
   private final CANSparkFlex upperMotor;
 
-  @AutoLogOutput
-  private final double P;
-  @AutoLogOutput
-  private final double I;
-  @AutoLogOutput
-  private final double D;
-  @AutoLogOutput
-  private final double Iz;
-  @AutoLogOutput
-  private final double FF;
-  @AutoLogOutput
-  private final double maxOutput;
-  @AutoLogOutput
-  private final double minOutput;
-  @AutoLogOutput
-  private final double maxRPM;
+
   private final SparkPIDController pidController;
   private final RelativeEncoder encoder;
 
@@ -77,30 +59,34 @@ public class ShooterSubsystem extends SubsystemBase {
     pidController = lowerMotor.getPIDController();
     encoder = lowerMotor.getEncoder();
 
-    // Set the PID constants
-    P = Constants.ShooterConstants.P;
-    I = Constants.ShooterConstants.I;
-    D = Constants.ShooterConstants.D;
-    Iz = Constants.ShooterConstants.Iz;
-    FF = Constants.ShooterConstants.FF;
-    maxOutput = Constants.ShooterConstants.MAX_OUTPUT;
-    minOutput = Constants.ShooterConstants.MIN_OUTPUT;
-    maxRPM = Constants.ShooterConstants.MAX_RPM;
 
-    pidController.setP(P);
-    pidController.setI(I);
-    pidController.setD(D);
-    pidController.setIZone(Iz);
-    pidController.setFF(FF);
-    pidController.setOutputRange(minOutput, maxOutput);
+    pidController.setP(Constants.ShooterConstants.P);
+    pidController.setI(Constants.ShooterConstants.I);
+    pidController.setD(Constants.ShooterConstants.D);
+    pidController.setIZone(Constants.ShooterConstants.Iz);
+    pidController.setFF(Constants.ShooterConstants.FF);
+    pidController.setOutputRange(Constants.ShooterConstants.MIN_OUTPUT, Constants.ShooterConstants.MAX_OUTPUT);
+    pidController.setSmartMotionMaxVelocity(Constants.ShooterConstants.MAX_VELOCITY, 0);
+    pidController.setSmartMotionMinOutputVelocity(0, 0);
+    pidController.setSmartMotionMaxAccel(Constants.ShooterConstants.MAX_ACCELERATION, 0);
   }
 
   public void shoot() {
-    pidController.setReference(maxRPM, CANSparkBase.ControlType.kSmartVelocity);
+    pidController.setReference(Constants.ShooterConstants.MAX_RPM, CANSparkBase.ControlType.kSmartVelocity);
   }
 
 
   public void stop() {
     lowerMotor.set(0);
   }
+
+  /**
+   * Return the surface speed of the wheel in feet per second.
+   * @return the surface speed of the wheel in feet per second.
+   */
+  @AutoLogOutput(key = "Shooter/Surface Speed")
+  public double getSurfaceSpeed() {
+    return (encoder.getVelocity() * Math.PI * 4) / 12;
+  }
+
 }
