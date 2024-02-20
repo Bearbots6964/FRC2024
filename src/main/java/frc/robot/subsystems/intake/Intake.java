@@ -15,7 +15,7 @@ public class Intake extends SubsystemBase {
     this.io = io;
     setDefaultCommand(
         run(
-            () -> io.setVoltage(0.0, 0.0)));
+            () -> io.set(0.0, 0.0)));
   }
 
   @Override
@@ -36,9 +36,9 @@ public class Intake extends SubsystemBase {
       // ...convert to RPM...
       double intakeRpm = intakeRps * 60;
       // ...and set the intake and cerealizer to that speed
-      io.setVelocity(intakeRpm, intakeRpm);
+      io.setVelocity(-intakeRpm, -intakeRpm);
     }, () -> {
-      io.setVoltage(0.0, 0.0);
+      io.set(0.0, 0.0);
     });
   }
 
@@ -47,7 +47,15 @@ public class Intake extends SubsystemBase {
     return runEnd(() -> {
       io.setVelocity(Constants.IntakeConstants.INTAKE_SPEED, Constants.IntakeConstants.CEREALIZER_SPEED);
     }, () -> {
-      io.setVoltage(0.0, 0.0);
+      io.set(0.0, 0.0);
     });
+  }
+
+  public void setVelocity(double intakeRpm, double cerealizerRpm) {
+    io.setVelocity(intakeRpm, cerealizerRpm);
+  }
+
+  public void set(double intakePercent, double cerealizerPercent) {
+    io.set(intakePercent, cerealizerPercent);
   }
 }

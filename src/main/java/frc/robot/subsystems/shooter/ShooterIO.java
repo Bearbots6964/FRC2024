@@ -10,6 +10,7 @@ public interface ShooterIO {
     public double lowerAppliedVolts = 0.0;
     public double lowerRpmSetpoint = 0.0;
     public double lowerSurfaceSpeed = 0.0;
+    public double lowerOutput = 0.0;
     public double[] lowerCurrentAmps = new double[] {};
 
     public double upperPositionDegrees = 0.0;
@@ -17,6 +18,7 @@ public interface ShooterIO {
     public double upperAppliedVolts = 0.0;
     public double upperRpmSetpoint = 0.0;
     public double upperSurfaceSpeed = 0.0;
+    public double upperOutput = 0.0;
     public double[] upperCurrentAmps = new double[] {};
   }
 
@@ -24,9 +26,9 @@ public interface ShooterIO {
   public default void updateInputs(ShooterIOInputs inputs) {}
 
   /** Run open loop at the specified voltage. */
-  public default void setVoltage(double lowerVolts, double upperVolts) {}
+  public default void set(double lowerPercent, double upperPercent) {}
 
   /** Run closed loop at the specified velocity. */
   public default void setVelocity(
-      double lowerRpm, double upperRpm, double lowerFF, double upperFF) {}
+      double lowerRpm, double upperRpm) {}
 }

@@ -23,7 +23,7 @@ public interface IntakeIO {
   public default void updateInputs(IntakeIOInputs inputs) {}
 
   /** Run open loop at the specified voltage. */
-  public default void setVoltage(double intakeVolts, double cerealizerVolts) {}
+  public default void set(double intakePercent, double cerealizerPercent) {}
 
   /** Run closed loop at the specified velocity. */
   public default void setVelocity(
