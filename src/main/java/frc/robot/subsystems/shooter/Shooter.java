@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.Constants;
 import org.littletonrobotics.junction.Logger;
 
+import java.util.function.DoubleSupplier;
+
 public class Shooter extends SubsystemBase {
   public static final double launchVelocity = Constants.ShooterConstants.MAX_RPM;
   private final ShooterIO io;
@@ -16,7 +18,7 @@ public class Shooter extends SubsystemBase {
     this.io = io;
     setDefaultCommand(
         run(
-            () -> io.setVoltage(0.0, 0.0)));
+            () -> io.set(0.0, 0.0)));
   }
 
   @Override
@@ -25,21 +27,12 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter", inputs);
   }
 
-  public void setVoltage(double lowerVolts, double upperVolts) {
-    io.setVoltage(lowerVolts, upperVolts);
+  public void set(double lowerPercent, double upperPercent) {
+    io.set(lowerPercent, upperPercent);
   }
 
-  public void setVelocity(double lowerRpm, double upperRpm, double lowerFF, double upperFF) {
-    io.setVelocity(lowerRpm, upperRpm, lowerFF, upperFF);
+  public void setVelocity(double lowerRpm, double upperRpm) {
+    io.setVelocity(lowerRpm, upperRpm);
   }
 
-  /**
-   * Returns a command that shoots a note.
-   */
-  public Command shootCommand() {
-    return Commands.startEnd(
-        () -> io.setVelocity(launchVelocity, launchVelocity, feedforward, feedforward),
-        () -> io.setVoltage(0.0, 0.0));
-
-  }
 }

@@ -41,15 +41,13 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public void setVoltage(double lowerVolts, double upperVolts) {
-    lowerAppliedVolts = lowerVolts;
-    upperAppliedVolts = upperVolts;
-    lowerMotorSim.setInputVoltage(lowerVolts);
-    upperMotorSim.setInputVoltage(upperVolts);
+  public void set(double lowerPercent, double upperPercent) {
+    lowerMotorSim.setInputVoltage(lowerPercent * 12);
+    upperMotorSim.setInputVoltage(upperPercent * 12);
   }
 
   @Override
-  public void setVelocity(double lowerRpm, double upperRpm, double lowerFF, double upperFF) {
+  public void setVelocity(double lowerRpm, double upperRpm) {
     lowerController.setSetpoint(lowerRpm);
     upperController.setSetpoint(upperRpm);
     lowerMotorSim.setInputVoltage(lowerController.calculate(lowerMotorSim.getAngularVelocityRadPerSec(), lowerRpm));

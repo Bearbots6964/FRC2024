@@ -16,37 +16,44 @@ public class ShooterIOSparkFlex implements ShooterIO {
 
 
   public ShooterIOSparkFlex() {
-    // Restore factory defaults
-    lowerMotor.restoreFactoryDefaults();
-    upperMotor.restoreFactoryDefaults();
-
-    // Set CAN timeouts
-    lowerMotor.setCANTimeout(250);
-    upperMotor.setCANTimeout(250);
-
-    // Set motor inversions
-    lowerMotor.setInverted(false);
-    upperMotor.setInverted(true);
-
-    // Enable voltage compensation
-    lowerMotor.enableVoltageCompensation(12.0);
-    upperMotor.enableVoltageCompensation(12.0);
-
-    // Set smart current limits
-    lowerMotor.setSmartCurrentLimit(40);
-    upperMotor.setSmartCurrentLimit(40);
-
-    // Set PID constants
-    lowerPID.setP(P);
-    lowerPID.setI(I);
-    lowerPID.setD(D);
-    upperPID.setP(P);
-    upperPID.setI(I);
-    upperPID.setD(D);
-
-    // Burn flash
-    lowerMotor.burnFlash();
-    upperMotor.burnFlash();
+//
+//    // Set CAN timeouts
+//    lowerMotor.setCANTimeout(250);
+//    upperMotor.setCANTimeout(250);
+//
+//    // Set motor inversions
+//    lowerMotor.setInverted(false);
+//    upperMotor.setInverted(true);
+//
+//    // Enable voltage compensation
+//    lowerMotor.enableVoltageCompensation(12.0);
+//    upperMotor.enableVoltageCompensation(12.0);
+//
+//    lowerMotor.getPIDController().setFeedbackDevice(lowerEncoder);
+//    upperMotor.getPIDController().setFeedbackDevice(upperEncoder);
+//
+//    // Set smart current limits
+//    lowerMotor.setSmartCurrentLimit(40);
+//    upperMotor.setSmartCurrentLimit(40);
+//
+//    // Set PID constants
+//    lowerPID.setP(P);
+//    lowerPID.setI(I);
+//    lowerPID.setD(D);
+//    lowerPID.setFF(Constants.ShooterConstants.FF);
+//    upperPID.setP(P);
+//    upperPID.setI(I);
+//    upperPID.setD(D);
+//    upperPID.setFF(Constants.ShooterConstants.FF);
+//
+//    lowerPID.setSmartMotionMaxVelocity(5700, 0);
+//    lowerPID.setSmartMotionMinOutputVelocity(0, 0);
+//    upperPID.setSmartMotionMaxVelocity(5700, 0);
+//    upperPID.setSmartMotionMinOutputVelocity(0, 0);
+//
+//    // Burn flash
+//    lowerMotor.burnFlash();
+//    upperMotor.burnFlash();
   }
 
   @Override
@@ -59,25 +66,27 @@ public class ShooterIOSparkFlex implements ShooterIO {
     // but I don't know if we would actually use that.
     // TODO: determine if we want to use surface speed
     inputs.lowerSurfaceSpeed = lowerEncoder.getVelocity() * Constants.ShooterConstants.WHEEL_DIAMETER * Math.PI / 60.0 / 12.0; // feet per second
+    inputs.lowerOutput = lowerMotor.get();
     inputs.lowerCurrentAmps = new double[] {lowerMotor.getOutputCurrent()};
 
     inputs.upperPositionDegrees = upperEncoder.getPosition();
     inputs.upperVelocityRpm = upperEncoder.getVelocity();
     inputs.upperAppliedVolts = upperMotor.getAppliedOutput() * upperMotor.getBusVoltage();
     inputs.upperSurfaceSpeed = upperEncoder.getVelocity() * Constants.ShooterConstants.WHEEL_DIAMETER * Math.PI / 60.0 / 12.0; // feet per second
+    inputs.upperOutput = upperMotor.get();
     inputs.upperCurrentAmps = new double[] {upperMotor.getOutputCurrent()};
   }
 
   @Override
-  public void setVoltage(double lowerVolts, double upperVolts) {
-    lowerMotor.setVoltage(lowerVolts);
-    upperMotor.setVoltage(upperVolts);
+  public void set(double lowerPercent, double upperPercent) {
+    lowerMotor.set(lowerPercent);
+    upperMotor.set(upperPercent);
   }
 
   @Override
-  public void setVelocity(double lowerRpm, double upperRpm, double lowerFF, double upperFF) {
-    lowerPID.setReference(lowerRpm, CANSparkBase.ControlType.kSmartVelocity, 0, lowerFF);
-    upperPID.setReference(upperRpm, CANSparkBase.ControlType.kSmartVelocity, 0, upperFF);
+  public void setVelocity(double lowerRpm, double upperRpm) {
+    lowerPID.setReference(lowerRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
+    upperPID.setReference(upperRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
   }
 
 }

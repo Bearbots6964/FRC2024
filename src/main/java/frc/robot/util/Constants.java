@@ -70,8 +70,8 @@ public final class Constants {
     public static final double MAX_RPM = 240; // 4 rotations per second is the max. Notes are expensive enough as it is.
     public static final double MAX_VELOCITY = 240; // I don't know what these do but fuck it we ball
     public static final double MAX_ACCELERATION = 120;
-    public static final double INTAKE_SPEED = 3;
-    public static final double CEREALIZER_SPEED = 3;
+    public static final double INTAKE_SPEED = 5;
+    public static final double CEREALIZER_SPEED = 5;
   }
 
   public static final class AutonomousConstants {
