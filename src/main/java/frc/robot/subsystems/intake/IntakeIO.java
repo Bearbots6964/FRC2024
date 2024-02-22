@@ -28,4 +28,10 @@ public interface IntakeIO {
   /** Run closed loop at the specified velocity. */
   public default void setVelocity(
       double intakeRpm, double cerealizerRpm) {}
+
+  public default void setIntakeVelocity(double intakeRpm) {}
+  public default void setCerealizerVelocity(double cerealizerRpm) {}
+
+  public default void setCerealizer(double a) { }
+  public default void setIntake(double a) {}
 }

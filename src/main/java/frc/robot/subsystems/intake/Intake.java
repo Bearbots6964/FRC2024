@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 public class Intake extends SubsystemBase {
   public final IntakeIO io;
   public final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+  private boolean runIntake = true;
 
   public Intake(IntakeIO io) {
     this.io = io;
@@ -58,4 +59,20 @@ public class Intake extends SubsystemBase {
   public void set(double intakePercent, double cerealizerPercent) {
     io.set(intakePercent, cerealizerPercent);
   }
+
+  public void setIntakeVelocity(double intakeRpm) {
+    io.setIntakeVelocity(intakeRpm);
+  }
+
+  public void setCerealizerVelocity(double cerealizerRpm) {
+    io.setCerealizerVelocity(cerealizerRpm);
+  }
+  public void setCerealizer(double cerealizer) { io.setCerealizer(cerealizer);}
+  public void setIntake(double a) { io.setIntake(a);}
+
+  public void setRunIntake(boolean runIntake) {
+    this.runIntake = runIntake;
+  }
+
+
 }

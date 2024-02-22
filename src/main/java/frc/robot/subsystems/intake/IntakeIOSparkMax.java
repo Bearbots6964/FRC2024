@@ -14,48 +14,47 @@ public class IntakeIOSparkMax implements IntakeIO {
 
   public IntakeIOSparkMax() {
 
-//    intakeMotor.setCANTimeout(250);
-//    cerealizerMotor.setCANTimeout(250);
-//
-//    intakeMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-//    cerealizerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-//
-//    intakeMotor.setInverted(false);
-//    cerealizerMotor.setInverted(true);
-//
-//    intakeMotor.getPIDController().setFeedbackDevice(intakeMotor.getEncoder());
-//    cerealizerMotor.getPIDController().setFeedbackDevice(cerealizerMotor.getEncoder());
-//
-//    intakeMotor.enableVoltageCompensation(12.0);
-//    cerealizerMotor.enableVoltageCompensation(12.0);
-//
-//    intakeMotor.setSmartCurrentLimit(20);
-//    cerealizerMotor.setSmartCurrentLimit(20);
-//
-//    intakeMotor.getEncoder().setVelocityConversionFactor((double) 1 / 15); // 15:1 gear ratio
-//    cerealizerMotor.getEncoder().setVelocityConversionFactor((double) 1 / 20); // 20:1 gear ratio
-//
-//    intakeMotor.getPIDController().setP(Constants.IntakeConstants.P);
-//    intakeMotor.getPIDController().setI(Constants.IntakeConstants.I);
-//    intakeMotor.getPIDController().setD(Constants.IntakeConstants.D);
-//    intakeMotor.getPIDController().setIZone(Constants.IntakeConstants.Iz);
-//    intakeMotor.getPIDController().setFF(Constants.IntakeConstants.FF);
-//    intakeMotor.getPIDController().setOutputRange(Constants.IntakeConstants.MIN_OUTPUT, Constants.IntakeConstants.MAX_OUTPUT);
-//    intakeMotor.getPIDController().setSmartMotionMaxVelocity(5700, 0);
-//    intakeMotor.getPIDController().setSmartMotionMinOutputVelocity(0, 0);
-//
-//
-//    cerealizerMotor.getPIDController().setP(Constants.IntakeConstants.P);
-//    cerealizerMotor.getPIDController().setI(Constants.IntakeConstants.I);
-//    cerealizerMotor.getPIDController().setD(Constants.IntakeConstants.D);
-//    cerealizerMotor.getPIDController().setIZone(Constants.IntakeConstants.Iz);
-//    cerealizerMotor.getPIDController().setFF(Constants.IntakeConstants.FF);
-//    cerealizerMotor.getPIDController().setOutputRange(Constants.IntakeConstants.MIN_OUTPUT, Constants.IntakeConstants.MAX_OUTPUT);
-//    cerealizerMotor.getPIDController().setSmartMotionMaxVelocity(5700, 0);
-//    cerealizerMotor.getPIDController().setSmartMotionMinOutputVelocity(0, 0);
-//
-//    intakeMotor.burnFlash();
-//    cerealizerMotor.burnFlash();
+    intakeMotor.setCANTimeout(250);
+    cerealizerMotor.setCANTimeout(250);
+
+    intakeMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    cerealizerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+
+    intakeMotor.setInverted(true);
+    cerealizerMotor.setInverted(false);
+
+    intakeMotor.getPIDController().setFeedbackDevice(intakeMotor.getEncoder());
+    cerealizerMotor.getPIDController().setFeedbackDevice(cerealizerMotor.getEncoder());
+
+    intakeMotor.setSmartCurrentLimit(20);
+    cerealizerMotor.setSmartCurrentLimit(20);
+
+    intakeMotor.getEncoder().setVelocityConversionFactor(1); // 15:1 gear ratio
+    cerealizerMotor.getEncoder().setVelocityConversionFactor(1); // 20:1 gear ratio
+
+    intakeMotor.getPIDController().setP(0.001);
+    intakeMotor.getPIDController().setI(0);
+    intakeMotor.getPIDController().setD(0.003);
+    intakeMotor.getPIDController().setIZone(0);
+    intakeMotor.getPIDController().setFF(0.001);
+    intakeMotor.getPIDController().setOutputRange(-1, 1);
+    intakeMotor.getPIDController().setSmartMotionMaxVelocity(1800, 0);
+    intakeMotor.getPIDController().setSmartMotionMinOutputVelocity(0, 0);
+    intakeMotor.getPIDController().setSmartMotionMaxAccel(1000, 0);
+
+
+    cerealizerMotor.getPIDController().setP(0.0005);
+    cerealizerMotor.getPIDController().setI(0);
+    cerealizerMotor.getPIDController().setD(0.005);
+    cerealizerMotor.getPIDController().setIZone(0);
+    cerealizerMotor.getPIDController().setFF(0);
+    cerealizerMotor.getPIDController().setOutputRange(-1, 1);
+    cerealizerMotor.getPIDController().setSmartMotionMaxVelocity(5200, 0);
+    cerealizerMotor.getPIDController().setSmartMotionMaxAccel(2000, 0);
+    cerealizerMotor.getPIDController().setSmartMotionMinOutputVelocity(0, 0);
+
+    intakeMotor.burnFlash();
+    cerealizerMotor.burnFlash();
   }
 
   @Override
@@ -63,12 +62,12 @@ public class IntakeIOSparkMax implements IntakeIO {
     inputs.intakePositionDegrees = intakeMotor.getEncoder().getPosition();
     inputs.intakeVelocityRpm = intakeMotor.getEncoder().getVelocity();
     inputs.intakeAppliedVolts = intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage();
-    inputs.intakeCurrentAmps = new double[] {intakeMotor.getOutputCurrent()};
+    inputs.intakeCurrentAmps = new double[]{intakeMotor.getOutputCurrent()};
 
     inputs.cerealizerPositionDegrees = cerealizerMotor.getEncoder().getPosition();
     inputs.cerealizerVelocityRpm = cerealizerMotor.getEncoder().getVelocity();
     inputs.cerealizerAppliedVolts = cerealizerMotor.getAppliedOutput() * cerealizerMotor.getBusVoltage();
-    inputs.cerealizerCurrentAmps = new double[] {cerealizerMotor.getOutputCurrent()};
+    inputs.cerealizerCurrentAmps = new double[]{cerealizerMotor.getOutputCurrent()};
   }
 
   @Override
@@ -85,6 +84,26 @@ public class IntakeIOSparkMax implements IntakeIO {
     // kid named cambrian explosion
     intakeMotor.getPIDController().setReference(intakeRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
     cerealizerMotor.getPIDController().setReference(cerealizerRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
+  }
+
+  @Override
+  public void setIntakeVelocity(double intakeRpm) {
+    intakeMotor.getPIDController().setReference(intakeRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
+  }
+
+  @Override
+  public void setCerealizerVelocity(double cerealizerRpm) {
+    cerealizerMotor.getPIDController().setReference(cerealizerRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
+  }
+
+  @Override
+  public void setCerealizer(double a) {
+    cerealizerMotor.set(a);
+  }
+
+  @Override
+  public void setIntake(double a) {
+    intakeMotor.set(a);
   }
 
 
