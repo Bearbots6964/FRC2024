@@ -8,11 +8,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -20,8 +17,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.DriveToShootingPositionCommand;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.IntakeWithSwerveCommand;
+import frc.robot.commands.RotateCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.drivebase.AimAtTargetCommand;
 import frc.robot.subsystems.intake.Intake;
@@ -32,8 +30,6 @@ import frc.robot.util.Constants.OperatorConstants;
 import frc.robot.commands.drivebase.AbsoluteDriveAdv;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.util.LimelightHelpers;
-
-import java.io.File;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -46,7 +42,7 @@ public class RobotContainer {
   private final SwerveSubsystem drivebase;
   private final Intake intake;
   private final Shooter shooter;
-  private final Command intakeCommand, shootCommand, intakeWithSwerveCommand, aimAtTargetCommand;
+  private final Command intakeCommand, shootCommand, aimAtTargetCommand, driveToShootingPositionCommand, rotateCommand;
 
   // CommandJoystick rotationController = new CommandJoystick(1);
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -62,10 +58,12 @@ public class RobotContainer {
     drivebase = SwerveSubsystem.getInstance();
     intake = new Intake(new IntakeIOSparkMax());
     shooter = new Shooter(new ShooterIOSparkFlex());
-    intakeCommand = new IntakeCommand(intake, () -> MathUtil.applyDeadband(driverXbox.getLeftTriggerAxis(), 0.1) * 4);
-    intakeWithSwerveCommand = new IntakeWithSwerveCommand(intake);
+    intakeCommand = new IntakeCommand(intake, () -> MathUtil.applyDeadband(driverXbox.getLeftTriggerAxis(), 0.1));
     shootCommand = new ShootCommand(shooter, () -> MathUtil.applyDeadband(driverXbox.getRightTriggerAxis(), 0.1) * 4000.0);
     aimAtTargetCommand = new AimAtTargetCommand(drivebase);
+    driveToShootingPositionCommand = new DriveToShootingPositionCommand(drivebase);
+    rotateCommand = new RotateCommand(drivebase);
+
 
 
     AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
@@ -97,8 +95,8 @@ public class RobotContainer {
     // left stick controls translation
     // right stick controls the angular velocity of the robot
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
-        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> -MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> -MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
         () -> driverXbox.getRawAxis(4));
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
@@ -124,16 +122,14 @@ public class RobotContainer {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
     new JoystickButton(driverXbox, 1).onTrue((new InstantCommand(drivebase::zeroGyro)));
-    new JoystickButton(driverXbox, XboxController.Button.kX.value).whileTrue(drivebase.driveCommand(() -> 0.0, () -> 0.0, () -> Math.cos(Units.degreesToRadians(LimelightHelpers.getTX("limelight-back"))), () -> Math.sin(Units.degreesToRadians(LimelightHelpers.getTX("limelight-back")))));
+    new JoystickButton(driverXbox, XboxController.Button.kX.value).whileTrue(drivebase.driveCommand(() -> 0.0, () -> 0.0, () -> -LimelightHelpers.getTX("limelight-back") / 10));
     new JoystickButton(driverXbox,
-        2).whileTrue(
-        Commands.deferredProxy(() -> drivebase.driveToPose(
-            new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)))
-        ));
+        2).whileTrue(driveToShootingPositionCommand);
+    new JoystickButton(driverXbox, XboxController.Button.kY.value).whileTrue(rotateCommand);
 //    new JoystickButton(driverXbox, 3).whileTrue(new RepeatCommand(new InstantCommand(drivebase::lock, drivebase)));
 
 
-    new JoystickButton(driverXbox, XboxController.Button.kRightBumper.value).whileTrue(intakeWithSwerveCommand); // not independent of speed
+
     new JoystickButton(driverXbox, XboxController.Button.kLeftBumper.value).whileTrue(intakeCommand); // independent of speed
 
     shooter.setDefaultCommand(shootCommand);
