@@ -6,9 +6,11 @@ package frc.robot.subsystems;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -36,9 +38,11 @@ import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 public class SwerveSubsystem extends SubsystemBase {
+  private boolean lockRotation = false;
 
   private static final SwerveSubsystem INSTANCE = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
 
@@ -103,7 +107,7 @@ public class SwerveSubsystem extends SubsystemBase {
             // Max module speed, in m/s
             swerveDrive.swerveDriveConfiguration.getDriveBaseRadiusMeters(),
             // Drive base radius in meters. Distance from robot center to furthest module.
-            new ReplanningConfig()
+            new ReplanningConfig(true, true)
             // Default path replanning config. See the API for the options here
         ),
         () -> {
@@ -115,6 +119,7 @@ public class SwerveSubsystem extends SubsystemBase {
         },
         this // Reference to this subsystem to set requirements
     );
+    
   }
 
   /**
@@ -133,7 +138,7 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
-   /**
+  /**
    * Get the path follower with events.
    *
    * @param pathName PathPlanner path name.
@@ -151,6 +156,8 @@ public class SwerveSubsystem extends SubsystemBase {
    * @return PathFinding command
    */
   public Command driveToPose(Pose2d pose) {
+    lockRotation = true;
+    PathPlannerPath path = PathPlannerPath.fromPathFile("Go to red speaker");
 // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(
         swerveDrive.getMaximumVelocity(), 4.0,
@@ -248,7 +255,7 @@ public class SwerveSubsystem extends SubsystemBase {
       // Make the robot move
       swerveDrive.drive(new Translation2d(Math.pow(translationX.getAsDouble(), 3) * swerveDrive.getMaximumVelocity(),
               Math.pow(translationY.getAsDouble(), 3) * swerveDrive.getMaximumVelocity()),
-          Math.pow(angularRotationX.getAsDouble(), 3) * swerveDrive.getMaximumAngularVelocity(),
+          angularRotationX.getAsDouble()  * swerveDrive.getMaximumAngularVelocity(),
           true,
           false);
     });
@@ -295,6 +302,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (LimelightHelpers.getTV("limelight-back"))
+      swerveDrive.addVisionMeasurement(LimelightHelpers.getBotPose2d_wpiRed("limelight-back"), Timer.getFPGATimestamp() - (LimelightHelpers.getLatency_Pipeline("limelight-back") + LimelightHelpers.getLatency_Capture("limelight-back")) / 1000.0);
+
+    PathPlannerLogging.logCurrentPose(getPose());
   }
 
   @Override
@@ -472,6 +483,7 @@ public class SwerveSubsystem extends SubsystemBase {
   public void addFakeVisionReading() {
     swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
   }
+
 
   /**
    * Get the swerve drive object.

@@ -8,6 +8,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.DriveToShootingPositionCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateCommand;
 import frc.robot.commands.ShootCommand;
@@ -42,7 +42,7 @@ public class RobotContainer {
   private final SwerveSubsystem drivebase;
   private final Intake intake;
   private final Shooter shooter;
-  private final Command intakeCommand, shootCommand, aimAtTargetCommand, driveToShootingPositionCommand, rotateCommand;
+  private final Command intakeCommand, shootCommand, aimAtTargetCommand, rotateCommand, driveToPoseCommand;
 
   // CommandJoystick rotationController = new CommandJoystick(1);
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -59,19 +59,26 @@ public class RobotContainer {
     intake = new Intake(new IntakeIOSparkMax());
     shooter = new Shooter(new ShooterIOSparkFlex());
     intakeCommand = new IntakeCommand(intake, () -> MathUtil.applyDeadband(driverXbox.getLeftTriggerAxis(), 0.1));
-    shootCommand = new ShootCommand(shooter, () -> MathUtil.applyDeadband(driverXbox.getRightTriggerAxis(), 0.1) * 4000.0);
+    shootCommand = new ShootCommand(shooter, () -> MathUtil.applyDeadband(driverXbox.getRightTriggerAxis(), 0.1) * 3750.0);
     aimAtTargetCommand = new AimAtTargetCommand(drivebase);
-    driveToShootingPositionCommand = new DriveToShootingPositionCommand(drivebase);
     rotateCommand = new RotateCommand(drivebase);
-
+    driveToPoseCommand = new ShootCommand(shooter, () -> 4000).alongWith(drivebase.driveToPose(
+        new Pose2d(new Translation2d(2.720, 2.579), Rotation2d.fromDegrees(180))));
+    var alliance = DriverStation.getAlliance();
+    int invert;
+    if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+      invert = -1;
+    } else {
+      invert = 1;
+    }
 
 
     AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
-        () -> MathUtil.applyDeadband(driverXbox.getLeftY(),
+        () -> MathUtil.applyDeadband(driverXbox.getLeftY() * invert,
             OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getLeftX(),
+        () -> MathUtil.applyDeadband(driverXbox.getLeftX() * invert,
             OperatorConstants.LEFT_X_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getRightX(),
+        () -> MathUtil.applyDeadband(driverXbox.getRightX() * invert,
             OperatorConstants.RIGHT_X_DEADBAND),
         driverXbox::getYButtonPressed,
         driverXbox::getAButtonPressed,
@@ -84,10 +91,10 @@ public class RobotContainer {
     // left stick controls translation
     // right stick controls the desired angle NOT angular rotation
     Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
-        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverXbox.getRightX(),
-        () -> driverXbox.getRightY());
+        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND) * invert,
+        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND) * invert,
+        () -> driverXbox.getRightX() * invert,
+        () -> driverXbox.getRightY() * invert);
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
@@ -95,14 +102,17 @@ public class RobotContainer {
     // left stick controls translation
     // right stick controls the angular velocity of the robot
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
-        () -> -MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> -MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverXbox.getRawAxis(4));
+        () -> -MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND) * invert,
+        () -> -MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND) * invert,
+        () -> driverXbox.getRawAxis(4) * invert);
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
-        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverXbox.getRawAxis(2));
+        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND) * invert,
+        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND) * invert,
+        () -> driverXbox.getRawAxis(2) * invert );
+
+    Command sysIdForDrive = drivebase.sysIdDriveMotorCommand();
+    Command sysIdForAngle = drivebase.sysIdAngleMotorCommand();
 
     drivebase.setDefaultCommand(
         !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
@@ -122,11 +132,14 @@ public class RobotContainer {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
     new JoystickButton(driverXbox, 1).onTrue((new InstantCommand(drivebase::zeroGyro)));
-    new JoystickButton(driverXbox, XboxController.Button.kX.value).whileTrue(drivebase.driveCommand(() -> 0.0, () -> 0.0, () -> -LimelightHelpers.getTX("limelight-back") / 10));
+    new JoystickButton(driverXbox, XboxController.Button.kX.value).whileTrue(
+        drivebase.driveCommand(() -> 0.0, () -> 0.0, () -> -LimelightHelpers.getTX("limelight-back") / 10));
     new JoystickButton(driverXbox,
-        2).whileTrue(driveToShootingPositionCommand);
+        2).whileTrue(driveToPoseCommand);
     new JoystickButton(driverXbox, XboxController.Button.kY.value).whileTrue(rotateCommand);
 //    new JoystickButton(driverXbox, 3).whileTrue(new RepeatCommand(new InstantCommand(drivebase::lock, drivebase)));
+    //new JoystickButton(driverXbox, XboxController.Button.kStart.value).whileTrue(drivebase.sysIdAngleMotorCommand());
+    //new JoystickButton(driverXbox, XboxController.Button.kBack.value).whileTrue(drivebase.sysIdDriveMotorCommand());
 
 
 
