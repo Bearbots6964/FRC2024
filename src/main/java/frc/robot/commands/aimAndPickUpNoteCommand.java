@@ -1,27 +1,24 @@
 package frc.robot.commands;
 
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.util.Constants;
-
-import java.util.function.DoubleSupplier;
-import java.util.prefs.PreferencesFactory;
+import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.util.LimelightHelpers;
 
 
-public class IntakeCommand extends Command {
+public class aimAndPickUpNoteCommand extends Command {
   private final Intake intake;
-  private final DoubleSupplier speed;
+  private final SwerveSubsystem swerveSubsystem;
+  private final String limelightName = "limelight-front";
 
-
-  public IntakeCommand(Intake intake, DoubleSupplier speed) {
+  public aimAndPickUpNoteCommand(Intake intake, SwerveSubsystem swerveSubsystem) {
     this.intake = intake;
-    this.speed = speed;
+    this.swerveSubsystem = swerveSubsystem;
     // each subsystem used by the command must be passed into the
     // addRequirements() method (which takes a vararg of Subsystem)
-    addRequirements(this.intake);
-
+    addRequirements(this.intake, this.swerveSubsystem);
   }
 
   @Override
@@ -31,10 +28,10 @@ public class IntakeCommand extends Command {
 
   @Override
   public void execute() {
-
+    if(LimelightHelpers.getTV(limelightName))
+      swerveSubsystem.drive(new Translation2d(VisionSubsystem.getInstance().limelight_range_proportional(), 0), VisionSubsystem.getInstance().limelight_aim_proportional(), false);
     intake.setVelocity(1 /*revolutions per minute*/ * 15 /* revolutions per turn */ * 60 /* seconds per minute */ * 2 /* turns per second*/,
         1.25  /*revolutions per minute*/ * 20 /* revolutions per turn */ * 60 /* seconds per minute */ * 2 /* turns per second*/);
-
   }
 
   @Override
@@ -45,6 +42,6 @@ public class IntakeCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    intake.set(0.0, 0.0);
+    intake.set(0,0);
   }
 }

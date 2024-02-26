@@ -10,6 +10,7 @@ public class ShootCommand extends Command {
   private final Shooter shooter;
   private final DoubleSupplier speed;
 
+
   public ShootCommand(Shooter shooter, DoubleSupplier speed) {
     this.shooter = shooter;
     this.speed = speed;
