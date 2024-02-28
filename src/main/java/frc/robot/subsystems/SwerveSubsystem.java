@@ -260,6 +260,16 @@ public class SwerveSubsystem extends SubsystemBase {
           false);
     });
   }
+  public Command driveCommandNonRel(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX) {
+    return run(() -> {
+      // Make the robot move
+      swerveDrive.drive(new Translation2d(Math.pow(translationX.getAsDouble(), 3) * swerveDrive.getMaximumVelocity(),
+              Math.pow(translationY.getAsDouble(), 3) * swerveDrive.getMaximumVelocity()),
+          angularRotationX.getAsDouble()  * swerveDrive.getMaximumAngularVelocity(),
+          false,
+          false);
+    });
+  }
 
   /**
    * The primary method for controlling the drivebase.  Takes a {@link Translation2d} and a rotation rate, and

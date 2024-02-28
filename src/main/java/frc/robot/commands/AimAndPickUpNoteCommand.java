@@ -8,12 +8,12 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.util.LimelightHelpers;
 
 
-public class aimAndPickUpNoteCommand extends Command {
+public class AimAndPickUpNoteCommand extends Command {
   private final Intake intake;
   private final SwerveSubsystem swerveSubsystem;
   private final String limelightName = "limelight-front";
 
-  public aimAndPickUpNoteCommand(Intake intake, SwerveSubsystem swerveSubsystem) {
+  public AimAndPickUpNoteCommand(Intake intake, SwerveSubsystem swerveSubsystem) {
     this.intake = intake;
     this.swerveSubsystem = swerveSubsystem;
     // each subsystem used by the command must be passed into the
@@ -29,7 +29,7 @@ public class aimAndPickUpNoteCommand extends Command {
   @Override
   public void execute() {
     if(LimelightHelpers.getTV(limelightName))
-      swerveSubsystem.drive(new Translation2d(VisionSubsystem.getInstance().limelight_range_proportional(), 0), VisionSubsystem.getInstance().limelight_aim_proportional(), false);
+      swerveSubsystem.drive(new Translation2d(VisionSubsystem.getInstance().limelight_range_proportional(), 0), VisionSubsystem.getInstance().limelight_aim_proportional_front(), false);
     intake.setVelocity(1 /*revolutions per minute*/ * 15 /* revolutions per turn */ * 60 /* seconds per minute */ * 2 /* turns per second*/,
         1.25  /*revolutions per minute*/ * 20 /* revolutions per turn */ * 60 /* seconds per minute */ * 2 /* turns per second*/);
   }
