@@ -6,18 +6,21 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.LimelightHelpers;
 
 
 public class AimAtLimelightCommand extends Command {
   private final SwerveSubsystem swerveSubsystem;
   private final VisionSubsystem visionSubsystem;
+
   private boolean isRedAlliance;
   double rotateCW, speed;
 
   public AimAtLimelightCommand(SwerveSubsystem swerveSubsystem, VisionSubsystem visionSubsystem) {
     this.swerveSubsystem = swerveSubsystem;
     this.visionSubsystem = visionSubsystem;
+
     // each subsystem used by the command must be passed into the
     // addRequirements() method (which takes a vararg of Subsystem)
     addRequirements(this.swerveSubsystem, this.visionSubsystem);
@@ -45,6 +48,7 @@ public class AimAtLimelightCommand extends Command {
    */
   @Override
   public void execute() {
+
     if (LimelightHelpers.getTV("limelight-back")) {
       swerveSubsystem.getSwerveDrive().drive(new Translation2d(0, 0), visionSubsystem.limelight_aim_proportional_back() / 5, false, false);
     } else {
@@ -71,7 +75,7 @@ public class AimAtLimelightCommand extends Command {
    */
   @Override
   public boolean isFinished() {
-    return (Math.abs(LimelightHelpers.getTX("limelight-back")) < 2.0) && LimelightHelpers.getTV("limelight-back");
+    return (Math.abs(LimelightHelpers.getTX("limelight-back")) < 1.0) && LimelightHelpers.getTV("limelight-back");
   }
 
   /**

@@ -32,8 +32,7 @@ public class IntakeCommand extends Command {
   @Override
   public void execute() {
 
-    intake.setVelocity(1 /*revolutions per minute*/ * 15 /* revolutions per turn */ * 60 /* seconds per minute */ * 2 /* turns per second*/,
-        1.25  /*revolutions per minute*/ * 20 /* revolutions per turn */ * 60 /* seconds per minute */ * 2 /* turns per second*/);
+    intake.set(0.5, 0.25);
 
   }
 
