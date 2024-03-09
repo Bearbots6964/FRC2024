@@ -49,10 +49,6 @@ public class RobotContainer {
   private final Shooter shooter;
   private final Command intakeCommand, shootCommand, aimAtLimelightCommand, rotateCommand, driveToPoseCommand, aimAndPickUpNoteCommand;
 
-  // CommandJoystick rotationController = new CommandJoystick(1);
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-
-  // CommandJoystick driverController   = new CommandJoystick(3);//(OperatorConstants.DRIVER_CONTROLLER_PORT);
   XboxController driverXbox = new XboxController(0);
   XboxController shooterXbox = new XboxController(1);
 
@@ -124,9 +120,6 @@ public class RobotContainer {
     new JoystickButton(driverXbox, XboxController.Button.kX.value).whileTrue(aimAtLimelightCommand);
     new JoystickButton(driverXbox, 2).whileTrue(driveToPoseCommand);
     new JoystickButton(driverXbox, XboxController.Button.kY.value).whileTrue(rotateCommand);
-//    new JoystickButton(driverXbox, 3).whileTrue(new RepeatCommand(new InstantCommand(drivebase::lock, drivebase)));
-    //new JoystickButton(driverXbox, XboxController.Button.kStart.value).whileTrue(drivebase.sysIdAngleMotorCommand());
-    //new JoystickButton(driverXbox, XboxController.Button.kBack.value).whileTrue(drivebase.sysIdDriveMotorCommand());
 
 
     new JoystickButton(shooterXbox, XboxController.Button.kLeftBumper.value).whileTrue(intakeCommand); // independent of speed
