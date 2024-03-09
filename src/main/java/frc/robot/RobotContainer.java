@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.AimAndPickUpNoteCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateCommand;
 import frc.robot.commands.ShootCommand;
@@ -46,7 +47,7 @@ public class RobotContainer {
   private final SwerveSubsystem drivebase;
   private final Intake intake;
   private final Shooter shooter;
-  private final Command intakeCommand, shootCommand, aimAtLimelightCommand, rotateCommand, driveToPoseCommand;
+  private final Command intakeCommand, shootCommand, aimAtLimelightCommand, rotateCommand, driveToPoseCommand, aimAndPickUpNoteCommand;
 
   // CommandJoystick rotationController = new CommandJoystick(1);
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -63,20 +64,12 @@ public class RobotContainer {
     intake = new Intake(new IntakeIOSparkMax());
     shooter = new Shooter(new ShooterIOSparkFlex());
     intakeCommand = new IntakeCommand(intake, () -> MathUtil.applyDeadband(shooterXbox.getLeftTriggerAxis(), 0.1));
-    shootCommand = new ShootCommand(shooter, () -> MathUtil.applyDeadband(shooterXbox.getRightTriggerAxis(), 0.1) * 3750.0);
+    shootCommand = new ShootCommand(shooter, () -> MathUtil.applyDeadband(shooterXbox.getRightTriggerAxis(), 0.1) * 3250);
     aimAtLimelightCommand = new AimAtLimelightCommand(drivebase, VisionSubsystem.getInstance());
     rotateCommand = new RotateCommand(drivebase);
     driveToPoseCommand = new ShootCommand(shooter, () -> 4000).alongWith(drivebase.driveToPose(new Pose2d(new Translation2d(2.720, 2.579), Rotation2d.fromDegrees(180))).andThen(drivebase.driveToPose(new Pose2d(new Translation2d(2.720, 2.579), Rotation2d.fromDegrees(180)))).andThen(new AimAtLimelightCommand(drivebase, VisionSubsystem.getInstance())).andThen(new IntakeCommand(intake, () -> 1)));
-    var alliance = DriverStation.getAlliance();
-    int invert;
-    if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-      invert = -1;
-    } else {
-      invert = 1;
-    }
-
-
-    AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase, () -> MathUtil.applyDeadband(driverXbox.getLeftY() * invert, OperatorConstants.LEFT_Y_DEADBAND), () -> MathUtil.applyDeadband(driverXbox.getLeftX() * invert, OperatorConstants.LEFT_X_DEADBAND), () -> MathUtil.applyDeadband(driverXbox.getRightX() * invert, OperatorConstants.RIGHT_X_DEADBAND), driverXbox::getYButtonPressed, driverXbox::getAButtonPressed, driverXbox::getXButtonPressed, driverXbox::getBButtonPressed);
+    aimAndPickUpNoteCommand = new AimAndPickUpNoteCommand(drivebase, VisionSubsystem.getInstance(), intake);
+    int invert = getInvert();
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
@@ -103,6 +96,20 @@ public class RobotContainer {
     configureBindings();
   }
 
+  private int getInvert() {
+    var alliance = DriverStation.getAlliance();
+    int invert;
+    if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+      invert = -1;
+    } else {
+      invert = 1;
+    }
+
+
+    AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase, () -> MathUtil.applyDeadband(driverXbox.getLeftY() * invert, OperatorConstants.LEFT_Y_DEADBAND), () -> MathUtil.applyDeadband(driverXbox.getLeftX() * invert, OperatorConstants.LEFT_X_DEADBAND), () -> MathUtil.applyDeadband(driverXbox.getRightX() * invert, OperatorConstants.RIGHT_X_DEADBAND), driverXbox::getYButtonPressed, driverXbox::getAButtonPressed, driverXbox::getXButtonPressed, driverXbox::getBButtonPressed);
+    return invert;
+  }
+
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary predicate, or via the
@@ -124,6 +131,7 @@ public class RobotContainer {
 
     new JoystickButton(shooterXbox, XboxController.Button.kLeftBumper.value).whileTrue(intakeCommand); // independent of speed
     new JoystickButton(driverXbox, XboxController.Button.kLeftBumper.value).whileTrue(intakeCommand);
+    new JoystickButton(driverXbox, XboxController.Button.kY.value).whileTrue(aimAndPickUpNoteCommand);
 
     shooter.setDefaultCommand(shootCommand);
   }
