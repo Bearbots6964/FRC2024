@@ -43,7 +43,7 @@ public class VisionSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    //SwerveSubsystem.addVisionMeasurement(LimelightHelpers.getBotPose2d("back-limelight"), Timer.getFPGATimestamp() - LimelightHelpers.getLatency_Capture("back-limelight") - LimelightHelpers.getLatency_Pipeline("back-limelight") );
+
 
     Logger.recordOutput("Targets", LimelightHelpers.getTargetPose3d_RobotSpace("limelight-back"));
 
