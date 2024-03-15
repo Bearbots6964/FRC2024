@@ -107,4 +107,13 @@ public class IntakeIOSparkMax implements IntakeIO {
   }
 
 
+  @Override
+  public void setIntakeVoltage(double volts) {
+    intakeMotor.setVoltage(volts);
+  }
+
+  @Override
+  public void setCerealizerVoltage(double volts) {
+    cerealizerMotor.setVoltage(volts);
+  }
 }

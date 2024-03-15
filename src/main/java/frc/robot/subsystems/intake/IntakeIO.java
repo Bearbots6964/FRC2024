@@ -34,4 +34,7 @@ public interface IntakeIO {
 
   public default void setCerealizer(double a) { }
   public default void setIntake(double a) {}
+
+  public default void setIntakeVoltage(double volts) {}
+  public default void setCerealizerVoltage(double volts) {}
 }
