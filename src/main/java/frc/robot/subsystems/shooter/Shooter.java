@@ -1,8 +1,11 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.Constants;
 import org.littletonrobotics.junction.Logger;
 
@@ -35,4 +38,20 @@ public class Shooter extends SubsystemBase {
     io.setVelocity(lowerRpm, upperRpm);
   }
 
+
+  public SysIdRoutine getSysIdRoutine() {
+    return new SysIdRoutine(new SysIdRoutine.Config(), new SysIdRoutine.Mechanism((v) -> io.setVoltage(v.in(Units.Volt)), null, this));
+  }
+
+  public Command generateSysIdCommand(SysIdRoutine sysIdRoutine, double delay, double quasiTimeout,
+                                             double dynamicTimeout)
+  {
+    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward).withTimeout(quasiTimeout)
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse).withTimeout(quasiTimeout))
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward).withTimeout(dynamicTimeout))
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout));
+  }
 }

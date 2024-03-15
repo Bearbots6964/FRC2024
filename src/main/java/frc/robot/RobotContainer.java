@@ -20,12 +20,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.AimAndPickUpNoteCommand;
-import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.RotateCommand;
-import frc.robot.commands.ShootCommand;
+import frc.robot.commands.*;
+import frc.robot.commands.drivebase.AbsoluteFieldDrive;
 import frc.robot.commands.drivebase.AimAtLimelightCommand;
 import frc.robot.commands.drivebase.AimAtTargetCommand;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
@@ -47,7 +46,10 @@ public class RobotContainer {
   private final SwerveSubsystem drivebase;
   private final Intake intake;
   private final Shooter shooter;
-  private final Command intakeCommand, shootCommand, aimAtLimelightCommand, rotateCommand, driveToPoseCommand, aimAndPickUpNoteCommand;
+  private final ArmSubsystem armSubsystem;
+  private final Command intakeCommand, shootCommand, aimAtLimelightCommand, rotateCommand, driveToPoseCommand, aimAndPickUpNoteCommand, armSysIdCommand, moveArmCommand;
+
+  private final Command absoluteFieldDrive;
 
   XboxController driverXbox = new XboxController(0);
   XboxController shooterXbox = new XboxController(1);
@@ -59,20 +61,25 @@ public class RobotContainer {
     drivebase = SwerveSubsystem.getInstance();
     intake = new Intake(new IntakeIOSparkMax());
     shooter = new Shooter(new ShooterIOSparkFlex());
+    armSubsystem = ArmSubsystem.getInstance();
     intakeCommand = new IntakeCommand(intake, () -> MathUtil.applyDeadband(shooterXbox.getLeftTriggerAxis(), 0.1));
     shootCommand = new ShootCommand(shooter, () -> MathUtil.applyDeadband(shooterXbox.getRightTriggerAxis(), 0.1) * 3250);
     aimAtLimelightCommand = new AimAtLimelightCommand(drivebase, VisionSubsystem.getInstance());
     rotateCommand = new RotateCommand(drivebase);
     driveToPoseCommand = new ShootCommand(shooter, () -> 4000).alongWith(drivebase.driveToPose(new Pose2d(new Translation2d(2.720, 2.579), Rotation2d.fromDegrees(180))).andThen(drivebase.driveToPose(new Pose2d(new Translation2d(2.720, 2.579), Rotation2d.fromDegrees(180)))).andThen(new AimAtLimelightCommand(drivebase, VisionSubsystem.getInstance())).andThen(new IntakeCommand(intake, () -> 1)));
     aimAndPickUpNoteCommand = new AimAndPickUpNoteCommand(drivebase, VisionSubsystem.getInstance(), intake);
+    armSysIdCommand = ArmSubsystem.generateSysIdCommand(armSubsystem.getSysId(), 2, 3.5, 1.5);
+    moveArmCommand = new MoveArmCommand(() -> MathUtil.applyDeadband(shooterXbox.getRightY(), 0.1));
     int invert = getInvert();
 
+    absoluteFieldDrive = new AbsoluteFieldDrive(drivebase, () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND) * invert, () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND) * invert, () -> driverXbox.getRightX() * invert);
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
     // controls are front-left positive
     // left stick controls translation
     // right stick controls the desired angle NOT angular rotation
     Command driveFieldOrientedDirectAngle = drivebase.driveCommand(() -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND) * invert, () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND) * invert, () -> driverXbox.getRightX() * invert, () -> driverXbox.getRightY() * invert);
+    AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase, () -> MathUtil.applyDeadband(driverXbox.getLeftY() * invert, OperatorConstants.LEFT_Y_DEADBAND), () -> MathUtil.applyDeadband(driverXbox.getLeftX() * invert, OperatorConstants.LEFT_X_DEADBAND), () -> MathUtil.applyDeadband(driverXbox.getRightX() * invert, OperatorConstants.RIGHT_X_DEADBAND), driverXbox::getYButtonPressed, driverXbox::getAButtonPressed, driverXbox::getXButtonPressed, driverXbox::getBButtonPressed);
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
@@ -85,6 +92,12 @@ public class RobotContainer {
 
     Command sysIdForDrive = drivebase.sysIdDriveMotorCommand();
     Command sysIdForAngle = drivebase.sysIdAngleMotorCommand();
+
+    Command driveFieldOrientedDirectAngleForTesting = drivebase.driveCommand(
+        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> driverXbox.getRightX(),
+        () -> driverXbox.getRightY());
 
     drivebase.setDefaultCommand(!RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
 
@@ -102,8 +115,7 @@ public class RobotContainer {
     }
 
 
-    AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase, () -> MathUtil.applyDeadband(driverXbox.getLeftY() * invert, OperatorConstants.LEFT_Y_DEADBAND), () -> MathUtil.applyDeadband(driverXbox.getLeftX() * invert, OperatorConstants.LEFT_X_DEADBAND), () -> MathUtil.applyDeadband(driverXbox.getRightX() * invert, OperatorConstants.RIGHT_X_DEADBAND), driverXbox::getYButtonPressed, driverXbox::getAButtonPressed, driverXbox::getXButtonPressed, driverXbox::getBButtonPressed);
-    return invert;
+        return invert;
   }
 
   /**
@@ -126,7 +138,11 @@ public class RobotContainer {
     new JoystickButton(driverXbox, XboxController.Button.kLeftBumper.value).whileTrue(intakeCommand);
     new JoystickButton(driverXbox, XboxController.Button.kY.value).whileTrue(aimAndPickUpNoteCommand);
 
+    new JoystickButton(shooterXbox,XboxController.Button.kA.value).whileTrue(armSysIdCommand);
+    new JoystickButton(shooterXbox, XboxController.Button.kB.value).whileTrue(shooter.generateSysIdCommand(shooter.getSysIdRoutine(), 2, 10, 10));
+
     shooter.setDefaultCommand(shootCommand);
+    armSubsystem.setDefaultCommand(moveArmCommand);
   }
 
   /**

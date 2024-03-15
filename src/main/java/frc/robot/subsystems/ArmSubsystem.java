@@ -1,13 +1,11 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkAbsoluteEncoder;
-import com.revrobotics.SparkPIDController;
+import com.revrobotics.*;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -25,16 +23,17 @@ public class ArmSubsystem extends SubsystemBase {
 
   private final CANSparkMax leftMotor; // Lead motor
   private final CANSparkMax rightMotor; // Follow Motor
+  private final SparkLimitSwitch forwardLimitSwitch, reverseLimitSwitch;
 
   private final SparkPIDController pidController;
   private final SparkAbsoluteEncoder encoder;
-  private final double kP;
-  private final double kI;
-  private final double kD;
-  private final double kIz;
-  private final double kFF;
-  private final double kMaxOutput;
-  private final double kMinOutput; // We'll probably want to put these in the constants class later
+  private static final double kP = 0.1;
+  private static final double kI = 1e-4;
+  private static final double kD = 1;
+  private static final double kIz = 0;
+  private static final double kFF = 0;
+  private static final double kMaxOutput = 1;
+  private static final double kMinOutput = -1; // We'll probably want to put these in the constants class later
   private double maxRange; // amount of revolutions (or other unit) it takes to move the arm from min to max
 
 
@@ -57,6 +56,10 @@ public class ArmSubsystem extends SubsystemBase {
   // Raises the arm (the right arm is set to mirror the left arm)
   public void raiseArm() {
     leftMotor.set(0.5);
+  }
+
+  public void moveArmButBetter(double speed) {
+    leftMotor.set(speed);
   }
 
   // Lowers the arm ()
@@ -109,35 +112,42 @@ public class ArmSubsystem extends SubsystemBase {
     leftMotor = new CANSparkMax(Constants.MotorConstants.LEFT_ARM_MOTOR, MotorType.kBrushless);
     rightMotor = new CANSparkMax(Constants.MotorConstants.RIGHT_ARM_MOTOR, MotorType.kBrushless);
 
+    encoder = rightMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+    encoder.setPositionConversionFactor(360); // 1 rotation = 360 degrees
+    // I don't want to have to deal with radians because of rounding errors
+
     // The right motor will mirror the leader, but it will be inverted
     rightMotor.follow(leftMotor, true);
 
     leftMotor.setIdleMode(IdleMode.kBrake);
-    leftMotor.setSmartCurrentLimit(20);
+    leftMotor.setSmartCurrentLimit(40);
     leftMotor.burnFlash();
 
     rightMotor.setIdleMode(IdleMode.kBrake);
-    rightMotor.setSmartCurrentLimit(20);
+    rightMotor.setSmartCurrentLimit(40);
     rightMotor.burnFlash();
 
-    pidController = leftMotor.getPIDController();
-    encoder = leftMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+    pidController = rightMotor.getPIDController();
 
 
-    kP = 0.1; 
-    kI = 1e-4;
-    kD = 1; 
-    kIz = 0; 
-    kFF = 0; 
-    kMaxOutput = 1; 
-    kMinOutput = -1;
+    forwardLimitSwitch = rightMotor.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
+    reverseLimitSwitch = rightMotor.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
 
-    pidController.setP(kP);
-    pidController.setI(kI);
-    pidController.setD(kD);
-    pidController.setIZone(kIz);
-    pidController.setFF(kFF);
-    pidController.setOutputRange(kMinOutput, kMaxOutput);
+    forwardLimitSwitch.enableLimitSwitch(true);
+    reverseLimitSwitch.enableLimitSwitch(true);
+
+
+    encoder.setPositionConversionFactor(360); // 1 rotation = 360 degrees
+    // I don't want to have to deal with radians because of rounding errors
+
+
+    //
+//    pidController.setP(kP);
+//    pidController.setI(kI);
+//    pidController.setD(kD);
+//    pidController.setIZone(kIz);
+//    pidController.setFF(kFF);
+//    pidController.setOutputRange(kMinOutput, kMaxOutput);
     
   }
   SysIdRoutine armSysId = new SysIdRoutine(
@@ -163,4 +173,22 @@ public class ArmSubsystem extends SubsystemBase {
         .andThen(Commands.waitSeconds(delay))
         .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout));
   }
+
+
+ @Override
+ public void periodic() {
+   // This method will be called once per scheduler run
+
+   // 0 degrees is set to (r, 270) in polar coordinates, because that way it will never wrap around
+   // If the forward limit switch is pressed, we're at 243 degrees
+   if(forwardLimitSwitch.isPressed()) {
+     encoder.setZeroOffset(242.88780212402344);
+   }
+   // If the reverse limit switch is pressed, we're at 40 degrees
+   if(reverseLimitSwitch.isPressed()) {
+     encoder.setZeroOffset(39.87791442871094);
+   }
+
+   SmartDashboard.putNumber("Arm Position", encoder.getPosition());
+ }
 }

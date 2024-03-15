@@ -3,8 +3,14 @@ package frc.robot.subsystems.intake;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.util.Constants;
+
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 // apparently staying up late coding leads to deranged comments so that's cool
 public class IntakeIOSparkMax implements IntakeIO {
@@ -13,6 +19,8 @@ public class IntakeIOSparkMax implements IntakeIO {
   private final CANSparkMax leftRollerMotor = new CANSparkMax(Constants.MotorConstants.LEFT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
   private final CANSparkMax rightRollerMotor = new CANSparkMax(Constants.MotorConstants.RIGHT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
   private final CANSparkMax cerealizerMotor = new CANSparkMax(Constants.MotorConstants.CEREALIZER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
+
+  private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
 
   public IntakeIOSparkMax() {
 
@@ -71,6 +79,7 @@ public class IntakeIOSparkMax implements IntakeIO {
     leftRollerMotor.burnFlash();
     rightRollerMotor.burnFlash();
     cerealizerMotor.burnFlash();
+
   }
 
   @Override
@@ -133,5 +142,30 @@ public class IntakeIOSparkMax implements IntakeIO {
   @Override
   public void setCerealizerVoltage(double volts) {
     cerealizerMotor.setVoltage(volts);
+  }
+
+
+  public DoubleSupplier getColorSensorProximity() {
+    return colorSensor::getProximity;
+  }
+
+  public DoubleSupplier getColorSensorRed() {
+    return colorSensor::getRed;
+  }
+
+  public DoubleSupplier getColorSensorGreen() {
+    return colorSensor::getGreen;
+  }
+
+  public DoubleSupplier getColorSensorBlue() {
+    return colorSensor::getBlue;
+  }
+
+  public DoubleSupplier getColorSensorIR() {
+    return colorSensor::getIR;
+  }
+
+  public Supplier<Color> getColorSensorColor() {
+    return colorSensor::getColor;
   }
 }

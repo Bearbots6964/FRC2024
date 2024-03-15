@@ -1,6 +1,10 @@
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.wpilibj.util.Color;
 import org.littletonrobotics.junction.AutoLog;
+
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public interface IntakeIO {
   // Cerealizer (n.) - 1. A device that dispenses cereal. 2. A typo the robot lead made that stuck.
@@ -15,6 +19,7 @@ public interface IntakeIO {
     public double cerealizerPositionDegrees = 0.0;
     public double cerealizerVelocityRpm = 0.0;
     public double cerealizerAppliedVolts = 0.0;
+
     public double[] cerealizerCurrentAmps = new double[] {};
 
   }
@@ -37,4 +42,16 @@ public interface IntakeIO {
 
   public default void setIntakeVoltage(double volts) {}
   public default void setCerealizerVoltage(double volts) {}
+
+  public DoubleSupplier getColorSensorProximity();
+
+  public DoubleSupplier getColorSensorRed();
+
+  public DoubleSupplier getColorSensorGreen();
+
+  public DoubleSupplier getColorSensorBlue();
+
+  public DoubleSupplier getColorSensorIR();
+
+  public Supplier<Color> getColorSensorColor();
 }

@@ -9,6 +9,8 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.util.Constants;
 import org.littletonrobotics.junction.Logger;
 
+import java.util.function.DoubleSupplier;
+
 import static edu.wpi.first.units.Units.Volts;
 
 // Not doing the sim because I would like to retain what little sanity I have left
@@ -28,6 +30,8 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
+
+
   }
 
   /** Returns a command that intakes a note. */
@@ -120,4 +124,29 @@ public class Intake extends SubsystemBase {
   public SysIdRoutine getCerealizerSysId() {
     return cerealizerSysId;
   }
+
+
+
+  public DoubleSupplier getColorSensorProximity() {
+    return io.getColorSensorProximity();
+  }
+
+  public DoubleSupplier getColorSensorRed() {
+    return io.getColorSensorRed();
+  }
+
+  public DoubleSupplier getColorSensorGreen() {
+    return io.getColorSensorGreen();
+  }
+
+  public DoubleSupplier getColorSensorBlue() {
+    return io.getColorSensorBlue();
+  }
+
+  public DoubleSupplier getColorSensorIR() {
+    return io.getColorSensorIR();
+  }
+
+
+
 }

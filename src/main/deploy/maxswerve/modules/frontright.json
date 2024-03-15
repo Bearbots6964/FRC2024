@@ -12,12 +12,11 @@
     "id": 0
   },
   "inverted": {
-    "drive": true,
-    "angle": true
+    "drive": false,
+    "angle": false
   },
-  "absoluteEncoderOffset": 180.810,
   "location": {
-    "x": 9.125,
-    "y": -13.75
+    "x": 5.5,
+    "y": -13.25
   }
 }

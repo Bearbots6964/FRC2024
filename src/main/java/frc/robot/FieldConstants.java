@@ -86,6 +86,7 @@ public class FieldConstants {
     /** Center of the speaker opening (blue alliance) */
     public static final Translation3d CENTER_SPEAKER_OPENING =
         BOTTOM_LEFT_SPEAKER.interpolate(TOP_RIGHT_SPEAKER, 0.5);
+
   }
 
   public static final Measure<Distance> APRIL_TAG_WIDTH = Inches.of(6.50);

@@ -32,5 +32,7 @@ public interface ShooterIO {
   public default void setVelocity(
       double lowerRpm, double upperRpm) {}
 
+  public default void setVoltage(double volts) {}
+
 
 }
