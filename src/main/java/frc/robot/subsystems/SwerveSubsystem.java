@@ -44,7 +44,7 @@ import java.util.function.DoubleSupplier;
 public class SwerveSubsystem extends SubsystemBase {
   private boolean lockRotation = false;
 
-  private static final SwerveSubsystem INSTANCE = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
+  private static final SwerveSubsystem INSTANCE = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "maxswerve"));
 
   public static SwerveSubsystem getInstance() {
     return INSTANCE;

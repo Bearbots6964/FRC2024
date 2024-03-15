@@ -1,6 +1,6 @@
 {
   "drive": {
-    "type": "sparkmax",
+    "type": "sparkflex",
     "id": 2
   },
   "angle": {
@@ -12,12 +12,12 @@
     "id": 0
   },
   "inverted": {
-    "drive": false,
+    "drive": true,
     "angle": true
   },
-  "absoluteEncoderOffset": 254.092,
+  "absoluteEncoderOffset": 180.810,
   "location": {
-    "x": 2.75,
+    "x": 9.125,
     "y": -13.75
   }
 }

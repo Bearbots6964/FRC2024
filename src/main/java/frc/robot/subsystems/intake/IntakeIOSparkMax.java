@@ -10,26 +10,40 @@ import frc.robot.util.Constants;
 public class IntakeIOSparkMax implements IntakeIO {
   public static final double MAX_RPM = 5700.0;
   private final CANSparkMax intakeMotor = new CANSparkMax(Constants.MotorConstants.INTAKE_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
+  private final CANSparkMax leftRollerMotor = new CANSparkMax(Constants.MotorConstants.LEFT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
+  private final CANSparkMax rightRollerMotor = new CANSparkMax(Constants.MotorConstants.RIGHT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
   private final CANSparkMax cerealizerMotor = new CANSparkMax(Constants.MotorConstants.CEREALIZER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
 
   public IntakeIOSparkMax() {
 
     intakeMotor.setCANTimeout(250);
+    leftRollerMotor.setCANTimeout(250);
+    rightRollerMotor.setCANTimeout(250);
     cerealizerMotor.setCANTimeout(250);
 
     intakeMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    leftRollerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    rightRollerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     cerealizerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
 
     intakeMotor.setInverted(true);
+    leftRollerMotor.setInverted(false);
+    rightRollerMotor.setInverted(true);
     cerealizerMotor.setInverted(false);
 
     intakeMotor.getPIDController().setFeedbackDevice(intakeMotor.getEncoder());
+    leftRollerMotor.getPIDController().setFeedbackDevice(leftRollerMotor.getEncoder());
+    rightRollerMotor.getPIDController().setFeedbackDevice(rightRollerMotor.getEncoder());
     cerealizerMotor.getPIDController().setFeedbackDevice(cerealizerMotor.getEncoder());
 
     intakeMotor.setSmartCurrentLimit(20);
+    leftRollerMotor.setSmartCurrentLimit(20);
+    rightRollerMotor.setSmartCurrentLimit(20);
     cerealizerMotor.setSmartCurrentLimit(20);
 
     intakeMotor.getEncoder().setVelocityConversionFactor(1); // 15:1 gear ratio
+    leftRollerMotor.getEncoder().setVelocityConversionFactor(1); // 20:1 gear ratio
+    rightRollerMotor.getEncoder().setVelocityConversionFactor(1); // 20:1 gear ratio
     cerealizerMotor.getEncoder().setVelocityConversionFactor(1); // 20:1 gear ratio
 
     intakeMotor.getPIDController().setP(0.001);
@@ -54,6 +68,8 @@ public class IntakeIOSparkMax implements IntakeIO {
     cerealizerMotor.getPIDController().setSmartMotionMinOutputVelocity(0, 0);
 
     intakeMotor.burnFlash();
+    leftRollerMotor.burnFlash();
+    rightRollerMotor.burnFlash();
     cerealizerMotor.burnFlash();
   }
 
@@ -73,6 +89,8 @@ public class IntakeIOSparkMax implements IntakeIO {
   @Override
   public void set(double intakePercent, double cerealizerPercent) {
     intakeMotor.set(intakePercent);
+    leftRollerMotor.set(intakePercent);
+    rightRollerMotor.set(intakePercent);
     cerealizerMotor.set(cerealizerPercent);
   }
 

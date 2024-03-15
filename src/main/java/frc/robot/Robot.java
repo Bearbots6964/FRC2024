@@ -31,7 +31,6 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit() {
     DataLogManager.start();
-    URCL.start();
     // Record metadata
     Pathfinding.setPathfinder(new LocalADStarAK());
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
