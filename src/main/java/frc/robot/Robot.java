@@ -75,7 +75,7 @@ public class Robot extends LoggedRobot {
 
     // See http://bit.ly/3YIzFZ6 for more information on timestamps in AdvantageKit.
     // Logger.disableDeterministicTimestamps()
-
+    Logger.registerURCL(URCL.startExternal());
     // Start AdvantageKit logger
     Logger.start();
 

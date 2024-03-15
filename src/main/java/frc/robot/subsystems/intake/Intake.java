@@ -2,10 +2,15 @@ package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.util.Constants;
 import org.littletonrobotics.junction.Logger;
+
+import static edu.wpi.first.units.Units.Volts;
+
 // Not doing the sim because I would like to retain what little sanity I have left
 public class Intake extends SubsystemBase {
   public final IntakeIO io;
@@ -74,5 +79,45 @@ public class Intake extends SubsystemBase {
     this.runIntake = runIntake;
   }
 
+  SysIdRoutine intakeSysId = new SysIdRoutine(
+      new SysIdRoutine.Config(
+          null, null, null,
+          (state) -> Logger.recordOutput("SysIdTestState", state.toString())
+      ),
+      new SysIdRoutine.Mechanism((v) -> this.setIntakeVoltage(v.in(Volts)), null, this)
+  );
+  SysIdRoutine cerealizerSysId = new SysIdRoutine(
+      new SysIdRoutine.Config(
+          null, null, null,
+          (state) -> Logger.recordOutput("SysIdTestState", state.toString())
+      ),
+      new SysIdRoutine.Mechanism((v) -> this.setCerealizerVoltage(v.in(Volts)), null, this)
+  );
 
+  public static Command generateSysIdCommand(SysIdRoutine sysIdRoutine, double delay, double quasiTimeout,
+                                             double dynamicTimeout) {
+    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward).withTimeout(quasiTimeout)
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse).withTimeout(quasiTimeout))
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward).withTimeout(dynamicTimeout))
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout));
+  }
+
+  public void setIntakeVoltage(double volts) {
+    io.setIntakeVoltage(volts);
+  }
+
+  public void setCerealizerVoltage(double volts) {
+    io.setCerealizerVoltage(volts);
+  }
+
+  public SysIdRoutine getIntakeSysId() {
+    return intakeSysId;
+  }
+
+  public SysIdRoutine getCerealizerSysId() {
+    return cerealizerSysId;
+  }
 }

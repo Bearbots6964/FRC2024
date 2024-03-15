@@ -8,8 +8,14 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.Constants;
+import org.littletonrobotics.junction.Logger;
+
+import static edu.wpi.first.units.Units.Volts;
 
 public class ArmSubsystem extends SubsystemBase {
 
@@ -56,6 +62,11 @@ public class ArmSubsystem extends SubsystemBase {
   // Lowers the arm ()
   public void lowerArm() {
     leftMotor.set(-0.5);
+  }
+
+  // Control the arm via voltage
+  public void setVoltage(double voltage) {
+    leftMotor.setVoltage(voltage);
   }
 
   // This should set the current arm location to be zero on the encoder?
@@ -128,5 +139,28 @@ public class ArmSubsystem extends SubsystemBase {
     pidController.setFF(kFF);
     pidController.setOutputRange(kMinOutput, kMaxOutput);
     
+  }
+  SysIdRoutine armSysId = new SysIdRoutine(
+      new SysIdRoutine.Config(
+          null, null, null,
+          (state) -> Logger.recordOutput("SysIdTestState", state.toString())
+      ),
+      new SysIdRoutine.Mechanism((v) -> this.setVoltage(v.in(Volts)), null, this)
+  );
+
+  public SysIdRoutine getSysId() {
+    return armSysId;
+  }
+
+  public static Command generateSysIdCommand(SysIdRoutine sysIdRoutine, double delay, double quasiTimeout,
+                                             double dynamicTimeout)
+  {
+    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward).withTimeout(quasiTimeout)
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse).withTimeout(quasiTimeout))
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward).withTimeout(dynamicTimeout))
+        .andThen(Commands.waitSeconds(delay))
+        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout));
   }
 }
