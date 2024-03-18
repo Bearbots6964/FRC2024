@@ -1,49 +1,44 @@
-package frc.robot.commands;
+package frc.robot.commands
 
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.util.Constants;
+import edu.wpi.first.wpilibj2.command.Command
+import frc.robot.subsystems.intake.Intake
+import java.util.function.DoubleSupplier
 
-import java.util.function.DoubleSupplier;
-import java.util.prefs.PreferencesFactory;
+/**
+ *
+ */
+class IntakeCommand(private val intake: Intake, private val speed: DoubleSupplier) : Command() {
+    init {
+        // each subsystem used by the command must be passed into the
+        // addRequirements() method (which takes a vararg of Subsystem)
+        addRequirements(this.intake)
+    }
 
+    /**
+     *
+     */
+    override fun initialize() {
+    }
 
-public class IntakeCommand extends Command {
-  private final Intake intake;
-  private final DoubleSupplier speed;
+    /**
+     *
+     */
+    override fun execute() {
+        intake[0.25] = -0.25
+    }
 
+    /**
+     *
+     */
+    override fun isFinished(): Boolean {
+        // TODO: Make this return true when this Command no longer needs to run execute()
+        return false
+    }
 
-  public IntakeCommand(Intake intake, DoubleSupplier speed) {
-    this.intake = intake;
-    this.speed = speed;
-    // each subsystem used by the command must be passed into the
-    // addRequirements() method (which takes a vararg of Subsystem)
-    addRequirements(this.intake);
-
-  }
-
-  @Override
-  public void initialize() {
-
-  }
-
-  @Override
-  public void execute() {
-
-    intake.set(0.5, 0.25);
-
-  }
-
-  @Override
-  public boolean isFinished() {
-    // TODO: Make this return true when this Command no longer needs to run execute()
-    return false;
-  }
-
-  @Override
-  public void end(boolean interrupted) {
-    intake.set(0.0, 0.0);
-  }
+    /**
+     *
+     */
+    override fun end(interrupted: Boolean) {
+        intake[0.0] = 0.0
+    }
 }

@@ -1,57 +1,130 @@
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.intake
 
-import edu.wpi.first.wpilibj.util.Color;
-import org.littletonrobotics.junction.AutoLog;
+import edu.wpi.first.wpilibj.util.Color
+import org.littletonrobotics.junction.AutoLog
+import java.util.function.DoubleSupplier
+import java.util.function.Supplier
 
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+/**
+ *
+ */
+interface IntakeIO {
+    /**
+     *
+     */// Cerealizer (n.) - 1. A device that dispenses cereal. 2. A typo the robot lead made that stuck.
+    // fr tho this is hilarious
+    @AutoLog
+    open class IntakeIOInputs {
+        /**
+         *
+         */
+        @JvmField
+        var intakePositionDegrees: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var intakeVelocityRpm: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var intakeAppliedVolts: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var intakeCurrentAmps: DoubleArray = doubleArrayOf()
 
-public interface IntakeIO {
-  // Cerealizer (n.) - 1. A device that dispenses cereal. 2. A typo the robot lead made that stuck.
-  // fr tho this is hilarious
-  @AutoLog
-  public static class IntakeIOInputs {
-    public double intakePositionDegrees = 0.0;
-    public double intakeVelocityRpm = 0.0;
-    public double intakeAppliedVolts = 0.0;
-    public double[] intakeCurrentAmps = new double[] {};
+        /**
+         *
+         */
+        @JvmField
+        var cerealizerPositionDegrees: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var cerealizerVelocityRpm: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var cerealizerAppliedVolts: Double = 0.0
 
-    public double cerealizerPositionDegrees = 0.0;
-    public double cerealizerVelocityRpm = 0.0;
-    public double cerealizerAppliedVolts = 0.0;
+        /**
+         *
+         */
+        @JvmField
+        var cerealizerCurrentAmps: DoubleArray = doubleArrayOf()
+    }
 
-    public double[] cerealizerCurrentAmps = new double[] {};
+    /** Updates the set of loggable inputs.  */
+    fun updateInputs(inputs: IntakeIOInputs) {}
 
-  }
+    /** Run open loop at the specified voltage.  */
+    operator fun set(intakePercent: Double, cerealizerPercent: Double) {}
 
-  /** Updates the set of loggable inputs. */
-  public default void updateInputs(IntakeIOInputs inputs) {}
+    /** Run closed loop at the specified velocity.  */
+    fun setVelocity(
+        intakeRpm: Double, cerealizerRpm: Double
+    ) {
+    }
 
-  /** Run open loop at the specified voltage. */
-  public default void set(double intakePercent, double cerealizerPercent) {}
+    /**
+     *
+     */
+    fun setIntakeVelocity(intakeRpm: Double) {}
+    /**
+     *
+     */
+    fun setCerealizerVelocity(cerealizerRpm: Double) {}
 
-  /** Run closed loop at the specified velocity. */
-  public default void setVelocity(
-      double intakeRpm, double cerealizerRpm) {}
+    /**
+     *
+     */
+    fun setCerealizer(a: Double) {}
+    /**
+     *
+     */
+    fun setIntake(a: Double) {}
 
-  public default void setIntakeVelocity(double intakeRpm) {}
-  public default void setCerealizerVelocity(double cerealizerRpm) {}
+    /**
+     *
+     */
+    fun setIntakeVoltage(volts: Double) {}
+    /**
+     *
+     */
+    fun setCerealizerVoltage(volts: Double) {}
 
-  public default void setCerealizer(double a) { }
-  public default void setIntake(double a) {}
+    /**
+     *
+     */
+    val colorSensorProximity: DoubleSupplier
 
-  public default void setIntakeVoltage(double volts) {}
-  public default void setCerealizerVoltage(double volts) {}
+    /**
+     *
+     */
+    val colorSensorRed: DoubleSupplier
 
-  public DoubleSupplier getColorSensorProximity();
+    /**
+     *
+     */
+    val colorSensorGreen: DoubleSupplier
 
-  public DoubleSupplier getColorSensorRed();
+    /**
+     *
+     */
+    val colorSensorBlue: DoubleSupplier
 
-  public DoubleSupplier getColorSensorGreen();
+    /**
+     *
+     */
+    val colorSensorIR: DoubleSupplier
 
-  public DoubleSupplier getColorSensorBlue();
-
-  public DoubleSupplier getColorSensorIR();
-
-  public Supplier<Color> getColorSensorColor();
+    /**
+     *
+     */
+    val colorSensorColor: Supplier<Color>
 }

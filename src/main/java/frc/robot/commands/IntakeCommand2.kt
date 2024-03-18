@@ -1,17 +1,17 @@
-package frc.robot.commands.drivebase
+package frc.robot.commands
 
 import edu.wpi.first.wpilibj2.command.Command
-import frc.robot.subsystems.SwerveSubsystem
-import frc.robot.util.LimelightHelpers.getTX
+import frc.robot.subsystems.intake.Intake
+import java.util.function.DoubleSupplier
 
 /**
  *
  */
-class AimAtTargetCommand(private val swerveSubsystem: SwerveSubsystem) : Command() {
+class IntakeCommand2(private val intake: Intake, private val speed: DoubleSupplier) : Command() {
     init {
         // each subsystem used by the command must be passed into the
         // addRequirements() method (which takes a vararg of Subsystem)
-        addRequirements(this.swerveSubsystem)
+        addRequirements(this.intake)
     }
 
     /**
@@ -24,10 +24,7 @@ class AimAtTargetCommand(private val swerveSubsystem: SwerveSubsystem) : Command
      *
      */
     override fun execute() {
-        swerveSubsystem.driveCommand(
-            { 0.0 },
-            { 0.0 },
-            { -getTX("limelight-back") }) // Not sure if this will work, more math may be required.
+        intake[-0.25] = 0.25
     }
 
     /**
@@ -42,5 +39,6 @@ class AimAtTargetCommand(private val swerveSubsystem: SwerveSubsystem) : Command
      *
      */
     override fun end(interrupted: Boolean) {
+        intake[0.0] = 0.0
     }
 }

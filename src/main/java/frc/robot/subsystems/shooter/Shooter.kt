@@ -1,57 +1,58 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.shooter
 
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Voltage;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.util.Constants;
-import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.units.Measure
+import edu.wpi.first.units.Units
+import edu.wpi.first.units.Voltage
+import edu.wpi.first.wpilibj2.command.Command
+import edu.wpi.first.wpilibj2.command.Commands
+import edu.wpi.first.wpilibj2.command.SubsystemBase
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
+import frc.robot.util.Constants.ShooterConstants
+import org.littletonrobotics.junction.Logger
 
-import java.util.function.DoubleSupplier;
+class Shooter(private val io: ShooterIO) : SubsystemBase() {
+    private val inputs = ShooterIOInputsAutoLogged()
+    private val feedforward = ShooterConstants.FF
 
-public class Shooter extends SubsystemBase {
-  public static final double launchVelocity = Constants.ShooterConstants.MAX_RPM;
-  private final ShooterIO io;
-  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
-  private final double feedforward = Constants.ShooterConstants.FF;
+    init {
+        defaultCommand = run { io.set(0.0, 0.0) }
+    }
 
-  public Shooter(ShooterIO io) {
-    this.io = io;
-    setDefaultCommand(
-        run(
-            () -> io.set(0.0, 0.0)));
-  }
+    override fun periodic() {
+        io.updateInputs(inputs)
+        Logger.processInputs("Shooter", inputs)
+    }
 
-  @Override
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Shooter", inputs);
-  }
+    operator fun set(lowerPercent: Double, upperPercent: Double) {
+        io[lowerPercent] = upperPercent
+    }
 
-  public void set(double lowerPercent, double upperPercent) {
-    io.set(lowerPercent, upperPercent);
-  }
-
-  public void setVelocity(double lowerRpm, double upperRpm) {
-    io.setVelocity(lowerRpm, upperRpm);
-  }
+    fun setVelocity(lowerRpm: Double, upperRpm: Double) {
+        io.setVelocity(lowerRpm, upperRpm)
+    }
 
 
-  public SysIdRoutine getSysIdRoutine() {
-    return new SysIdRoutine(new SysIdRoutine.Config(), new SysIdRoutine.Mechanism((v) -> io.setVoltage(v.in(Units.Volt)), null, this));
-  }
+    val sysIdRoutine: SysIdRoutine
+        get() = SysIdRoutine(
+            SysIdRoutine.Config(),
+            Mechanism({ v: Measure<Voltage?> -> io.setVoltage(v.`in`(Units.Volt)) }, null, this)
+        )
 
-  public Command generateSysIdCommand(SysIdRoutine sysIdRoutine, double delay, double quasiTimeout,
-                                             double dynamicTimeout)
-  {
-    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward).withTimeout(quasiTimeout)
-        .andThen(Commands.waitSeconds(delay))
-        .andThen(sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse).withTimeout(quasiTimeout))
-        .andThen(Commands.waitSeconds(delay))
-        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward).withTimeout(dynamicTimeout))
-        .andThen(Commands.waitSeconds(delay))
-        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout));
-  }
+    fun generateSysIdCommand(
+        sysIdRoutine: SysIdRoutine, delay: Double, quasiTimeout: Double,
+        dynamicTimeout: Double
+    ): Command {
+        return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward).withTimeout(quasiTimeout)
+            .andThen(Commands.waitSeconds(delay))
+            .andThen(sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse).withTimeout(quasiTimeout))
+            .andThen(Commands.waitSeconds(delay))
+            .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward).withTimeout(dynamicTimeout))
+            .andThen(Commands.waitSeconds(delay))
+            .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout))
+    }
+
+    companion object {
+        const val launchVelocity: Double = ShooterConstants.MAX_RPM
+    }
 }

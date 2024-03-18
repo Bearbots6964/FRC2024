@@ -1,29 +1,40 @@
-package frc.robot.commands;
+package frc.robot.commands
 
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ClimberSubsystem;
+import edu.wpi.first.wpilibj2.command.Command
+import frc.robot.subsystems.ClimberSubsystem
 
-public class ClimbCommand extends Command {
-  private final ClimberSubsystem climberSubsystem = ClimberSubsystem.getInstance();
+/**
+ *
+ */
+class ClimbCommand : Command() {
+    private val climberSubsystem: ClimberSubsystem = ClimberSubsystem.instance
 
-  public ClimbCommand() {
-    // each subsystem used by the command must be passed into the
-    // addRequirements() method (which takes a vararg of Subsystem)
-    addRequirements(this.climberSubsystem);
-  }
+    init {
+        // each subsystem used by the command must be passed into the
+        // addRequirements() method (which takes a vararg of Subsystem)
+        addRequirements(this.climberSubsystem)
+    }
 
-  @Override
-  public void initialize() {}
+    /**
+     *
+     */
+    override fun initialize() {}
 
-  @Override
-  public void execute() {}
+    /**
+     *
+     */
+    override fun execute() {}
 
-  @Override
-  public boolean isFinished() {
-    // TODO: Make this return true when this Command no longer needs to run execute()
-    return false;
-  }
+    /**
+     *
+     */
+    override fun isFinished(): Boolean {
+        // TODO: Make this return true when this Command no longer needs to run execute()
+        return false
+    }
 
-  @Override
-  public void end(boolean interrupted) {}
+    /**
+     *
+     */
+    override fun end(interrupted: Boolean) {}
 }

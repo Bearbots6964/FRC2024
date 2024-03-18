@@ -1,152 +1,150 @@
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.intake
 
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.util.Constants;
-import org.littletonrobotics.junction.Logger;
-
-import java.util.function.DoubleSupplier;
-
-import static edu.wpi.first.units.Units.Volts;
+import edu.wpi.first.math.util.Units
+import edu.wpi.first.units.Measure
+import edu.wpi.first.units.Voltage
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog
+import edu.wpi.first.wpilibj2.command.*
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
+import frc.robot.subsystems.SwerveSubsystem
+import frc.robot.util.Constants.IntakeConstants
+import org.littletonrobotics.junction.*
+import java.util.function.DoubleSupplier
+import kotlin.math.abs
 
 // Not doing the sim because I would like to retain what little sanity I have left
-public class Intake extends SubsystemBase {
-  public final IntakeIO io;
-  public final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
-  private boolean runIntake = true;
+@Suppress("ReplaceGetOrSet")
+class Intake(val io: IntakeIO) : SubsystemBase() {
+    val inputs: IntakeIOInputsAutoLogged = IntakeIOInputsAutoLogged()
+    private var runIntake = true
 
-  public Intake(IntakeIO io) {
-    this.io = io;
-    setDefaultCommand(
-        run(
-            () -> io.set(0.0, 0.0)));
-  }
+    override fun periodic() {
+        io.updateInputs(inputs)
+        Logger.processInputs("Intake", inputs)
+    }
 
-  @Override
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Intake", inputs);
+    /** Returns a command that intakes a note.  */
+    fun intakeCommandSpeedMatch(): Command {
+        return runEnd({
+            // get swerve velocity in x
+            val speed = Units.metersToInches(
+                abs(
+                    SwerveSubsystem.Companion.instance.robotVelocity.vxMetersPerSecond
+                )
+            ) // "grr I HATE metric!" - every American ever
+            // if the robot is moving, we'll want to match the speed of the robot,
+            // so we first calculate the number of rotations per second we need to intake
+            // luckily we already have the circumference from the Constants file
+            val intakeRps = speed / IntakeConstants.CIRCUMFERENCE
+            // ...convert to RPM...
+            val intakeRpm = intakeRps * 60
+            // ...and set the intake and cerealizer to that speed
+            io.setVelocity(-intakeRpm, -intakeRpm)
+        }, {
+            io.set(0.0, 0.0)
+        })
+    }
 
+    /** Returns a command that intakes a note. Now with speed-agnostic output.  */
+    fun intakeCommand(): Command {
+        return runEnd({
+            io.setVelocity(IntakeConstants.INTAKE_SPEED, IntakeConstants.CEREALIZER_SPEED)
+        }, {
+            io[0.0] = 0.0
+        })
+    }
 
-  }
+    fun setVelocity(intakeRpm: Double, cerealizerRpm: Double) {
+        io.setVelocity(intakeRpm, cerealizerRpm)
+    }
 
-  /** Returns a command that intakes a note. */
-  public Command intakeCommandSpeedMatch() {
-    return runEnd(() -> {
-      // get swerve velocity in x
-      double speed = Units.metersToInches(Math.abs(SwerveSubsystem.getInstance().getRobotVelocity().vxMetersPerSecond)); // "grr I HATE metric!" - every American ever
-      // if the robot is moving, we'll want to match the speed of the robot,
-      // so we first calculate the number of rotations per second we need to intake
-      // luckily we already have the circumference from the Constants file
-      double intakeRps = speed / Constants.IntakeConstants.CIRCUMFERENCE;
-      // ...convert to RPM...
-      double intakeRpm = intakeRps * 60;
-      // ...and set the intake and cerealizer to that speed
-      io.setVelocity(-intakeRpm, -intakeRpm);
-    }, () -> {
-      io.set(0.0, 0.0);
-    });
-  }
+    operator fun set(intakePercent: Double, cerealizerPercent: Double) {
+        io[intakePercent] = cerealizerPercent
+    }
 
-  /** Returns a command that intakes a note. Now with speed-agnostic output. */
-  public Command intakeCommand() {
-    return runEnd(() -> {
-      io.setVelocity(Constants.IntakeConstants.INTAKE_SPEED, Constants.IntakeConstants.CEREALIZER_SPEED);
-    }, () -> {
-      io.set(0.0, 0.0);
-    });
-  }
+    fun setIntakeVelocity(intakeRpm: Double) {
+        io.setIntakeVelocity(intakeRpm)
+    }
 
-  public void setVelocity(double intakeRpm, double cerealizerRpm) {
-    io.setVelocity(intakeRpm, cerealizerRpm);
-  }
+    fun setCerealizerVelocity(cerealizerRpm: Double) {
+        io.setCerealizerVelocity(cerealizerRpm)
+    }
 
-  public void set(double intakePercent, double cerealizerPercent) {
-    io.set(intakePercent, cerealizerPercent);
-  }
+    fun setCerealizer(cerealizer: Double) {
+        io.setCerealizer(cerealizer)
+    }
 
-  public void setIntakeVelocity(double intakeRpm) {
-    io.setIntakeVelocity(intakeRpm);
-  }
+    fun setIntake(a: Double) {
+        io.setIntake(a)
+    }
 
-  public void setCerealizerVelocity(double cerealizerRpm) {
-    io.setCerealizerVelocity(cerealizerRpm);
-  }
-  public void setCerealizer(double cerealizer) { io.setCerealizer(cerealizer);}
-  public void setIntake(double a) { io.setIntake(a);}
+    fun setRunIntake(runIntake: Boolean) {
+        this.runIntake = runIntake
+    }
 
-  public void setRunIntake(boolean runIntake) {
-    this.runIntake = runIntake;
-  }
+    var intakeSysId: SysIdRoutine = SysIdRoutine(
+        SysIdRoutine.Config(
+            null, null, null
+        ) { state: SysIdRoutineLog.State -> Logger.recordOutput("SysIdTestState", state.toString()) },
+        Mechanism(
+            { v: Measure<Voltage?> -> this.setIntakeVoltage(v.`in`(edu.wpi.first.units.Units.Volts)) },
+            null,
+            this
+        )
+    )
+    var cerealizerSysId: SysIdRoutine = SysIdRoutine(
+        SysIdRoutine.Config(
+            null, null, null
+        ) { state: SysIdRoutineLog.State -> Logger.recordOutput("SysIdTestState", state.toString()) },
+        Mechanism(
+            { v: Measure<Voltage?> -> this.setCerealizerVoltage(v.`in`(edu.wpi.first.units.Units.Volts)) },
+            null,
+            this
+        )
+    )
 
-  SysIdRoutine intakeSysId = new SysIdRoutine(
-      new SysIdRoutine.Config(
-          null, null, null,
-          (state) -> Logger.recordOutput("SysIdTestState", state.toString())
-      ),
-      new SysIdRoutine.Mechanism((v) -> this.setIntakeVoltage(v.in(Volts)), null, this)
-  );
-  SysIdRoutine cerealizerSysId = new SysIdRoutine(
-      new SysIdRoutine.Config(
-          null, null, null,
-          (state) -> Logger.recordOutput("SysIdTestState", state.toString())
-      ),
-      new SysIdRoutine.Mechanism((v) -> this.setCerealizerVoltage(v.in(Volts)), null, this)
-  );
+    init {
+        defaultCommand = run { io[0.0] = 0.0 }
+    }
 
-  public static Command generateSysIdCommand(SysIdRoutine sysIdRoutine, double delay, double quasiTimeout,
-                                             double dynamicTimeout) {
-    return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward).withTimeout(quasiTimeout)
-        .andThen(Commands.waitSeconds(delay))
-        .andThen(sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse).withTimeout(quasiTimeout))
-        .andThen(Commands.waitSeconds(delay))
-        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward).withTimeout(dynamicTimeout))
-        .andThen(Commands.waitSeconds(delay))
-        .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout));
-  }
+    fun setIntakeVoltage(volts: Double) {
+        io.setIntakeVoltage(volts)
+    }
 
-  public void setIntakeVoltage(double volts) {
-    io.setIntakeVoltage(volts);
-  }
-
-  public void setCerealizerVoltage(double volts) {
-    io.setCerealizerVoltage(volts);
-  }
-
-  public SysIdRoutine getIntakeSysId() {
-    return intakeSysId;
-  }
-
-  public SysIdRoutine getCerealizerSysId() {
-    return cerealizerSysId;
-  }
+    fun setCerealizerVoltage(volts: Double) {
+        io.setCerealizerVoltage(volts)
+    }
 
 
+    val colorSensorProximity: DoubleSupplier?
+        get() = io.colorSensorProximity
 
-  public DoubleSupplier getColorSensorProximity() {
-    return io.getColorSensorProximity();
-  }
+    val colorSensorRed: DoubleSupplier?
+        get() = io.colorSensorRed
 
-  public DoubleSupplier getColorSensorRed() {
-    return io.getColorSensorRed();
-  }
+    val colorSensorGreen: DoubleSupplier?
+        get() = io.colorSensorGreen
 
-  public DoubleSupplier getColorSensorGreen() {
-    return io.getColorSensorGreen();
-  }
+    val colorSensorBlue: DoubleSupplier?
+        get() = io.colorSensorBlue
 
-  public DoubleSupplier getColorSensorBlue() {
-    return io.getColorSensorBlue();
-  }
-
-  public DoubleSupplier getColorSensorIR() {
-    return io.getColorSensorIR();
-  }
+    val colorSensorIR: DoubleSupplier?
+        get() = io.colorSensorIR
 
 
-
+    companion object {
+        fun generateSysIdCommand(
+            sysIdRoutine: SysIdRoutine, delay: Double, quasiTimeout: Double,
+            dynamicTimeout: Double
+        ): Command {
+            return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward).withTimeout(quasiTimeout)
+                .andThen(Commands.waitSeconds(delay))
+                .andThen(sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse).withTimeout(quasiTimeout))
+                .andThen(Commands.waitSeconds(delay))
+                .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward).withTimeout(dynamicTimeout))
+                .andThen(Commands.waitSeconds(delay))
+                .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout))
+        }
+    }
 }

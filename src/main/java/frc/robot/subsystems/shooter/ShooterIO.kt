@@ -1,38 +1,103 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.shooter
 
-import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLog
 
-public interface ShooterIO {
-  @AutoLog
-  public static class ShooterIOInputs {
-    public double lowerPositionDegrees = 0.0;
-    public double lowerVelocityRpm = 0.0;
-    public double lowerAppliedVolts = 0.0;
-    public double lowerRpmSetpoint = 0.0;
-    public double lowerSurfaceSpeed = 0.0;
-    public double lowerOutput = 0.0;
-    public double[] lowerCurrentAmps = new double[] {};
+/**
+ *
+ */
+interface ShooterIO {
+    /**
+     *
+     */
+    @AutoLog
+    open class ShooterIOInputs {
+        /**
+         *
+         */
+        @JvmField
+        var lowerPositionDegrees: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var lowerVelocityRpm: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var lowerAppliedVolts: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var lowerRpmSetpoint: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var lowerSurfaceSpeed: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var lowerOutput: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var lowerCurrentAmps: DoubleArray = doubleArrayOf()
 
-    public double upperPositionDegrees = 0.0;
-    public double upperVelocityRpm = 0.0;
-    public double upperAppliedVolts = 0.0;
-    public double upperRpmSetpoint = 0.0;
-    public double upperSurfaceSpeed = 0.0;
-    public double upperOutput = 0.0;
-    public double[] upperCurrentAmps = new double[] {};
-  }
+        /**
+         *
+         */
+        @JvmField
+        var upperPositionDegrees: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var upperVelocityRpm: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var upperAppliedVolts: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var upperRpmSetpoint: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var upperSurfaceSpeed: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var upperOutput: Double = 0.0
+        /**
+         *
+         */
+        @JvmField
+        var upperCurrentAmps: DoubleArray = doubleArrayOf()
+    }
 
-  /** Updates the set of loggable inputs. */
-  public default void updateInputs(ShooterIOInputs inputs) {}
+    /** Updates the set of loggable inputs.  */
+    fun updateInputs(inputs: ShooterIOInputs) {}
 
-  /** Run open loop at the specified voltage. */
-  public default void set(double lowerPercent, double upperPercent) {}
+    /** Run open loop at the specified voltage.  */
+    operator fun set(lowerPercent: Double, upperPercent: Double) {}
 
-  /** Run closed loop at the specified velocity. */
-  public default void setVelocity(
-      double lowerRpm, double upperRpm) {}
+    /** Run closed loop at the specified velocity.  */
+    fun setVelocity(
+        lowerRpm: Double, upperRpm: Double
+    ) {
+    }
 
-  public default void setVoltage(double volts) {}
-
-
+    /**
+     *
+     */
+    fun setVoltage(volts: Double) {}
 }

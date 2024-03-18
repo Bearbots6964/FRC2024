@@ -1,171 +1,160 @@
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.intake
 
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkLowLevel;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.ColorSensorV3;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.util.Color;
-import frc.robot.util.Constants;
-
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+import com.revrobotics.CANSparkBase
+import com.revrobotics.CANSparkBase.IdleMode
+import com.revrobotics.CANSparkLowLevel
+import com.revrobotics.CANSparkMax
+import com.revrobotics.ColorSensorV3
+import edu.wpi.first.math.MathUtil
+import edu.wpi.first.wpilibj.I2C
+import edu.wpi.first.wpilibj.util.Color
+import frc.robot.subsystems.intake.IntakeIO.IntakeIOInputs
+import frc.robot.util.Constants.MotorConstants
+import java.util.function.DoubleSupplier
+import java.util.function.Supplier
 
 // apparently staying up late coding leads to deranged comments so that's cool
-public class IntakeIOSparkMax implements IntakeIO {
-  public static final double MAX_RPM = 5700.0;
-  private final CANSparkMax intakeMotor = new CANSparkMax(Constants.MotorConstants.INTAKE_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
-  private final CANSparkMax leftRollerMotor = new CANSparkMax(Constants.MotorConstants.LEFT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
-  private final CANSparkMax rightRollerMotor = new CANSparkMax(Constants.MotorConstants.RIGHT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
-  private final CANSparkMax cerealizerMotor = new CANSparkMax(Constants.MotorConstants.CEREALIZER_MOTOR, CANSparkLowLevel.MotorType.kBrushless);
+class IntakeIOSparkMax : IntakeIO {
+    private val intakeMotor = CANSparkMax(MotorConstants.INTAKE_MOTOR, CANSparkLowLevel.MotorType.kBrushless)
+    private val leftRollerMotor = CANSparkMax(MotorConstants.LEFT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless)
+    private val rightRollerMotor = CANSparkMax(MotorConstants.RIGHT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless)
+    private val cerealizerMotor = CANSparkMax(MotorConstants.CEREALIZER_MOTOR, CANSparkLowLevel.MotorType.kBrushless)
 
-  private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
+    private val colorSensor = ColorSensorV3(I2C.Port.kMXP)
 
-  public IntakeIOSparkMax() {
+    init {
+        intakeMotor.setCANTimeout(250)
+        leftRollerMotor.setCANTimeout(250)
+        rightRollerMotor.setCANTimeout(250)
+        cerealizerMotor.setCANTimeout(250)
 
-    intakeMotor.setCANTimeout(250);
-    leftRollerMotor.setCANTimeout(250);
-    rightRollerMotor.setCANTimeout(250);
-    cerealizerMotor.setCANTimeout(250);
+        intakeMotor.setIdleMode(IdleMode.kBrake)
+        leftRollerMotor.setIdleMode(IdleMode.kBrake)
+        rightRollerMotor.setIdleMode(IdleMode.kBrake)
+        cerealizerMotor.setIdleMode(IdleMode.kBrake)
 
-    intakeMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    leftRollerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    rightRollerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    cerealizerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+        intakeMotor.inverted = true
+        leftRollerMotor.inverted = false
+        rightRollerMotor.inverted = true
+        cerealizerMotor.inverted = false
 
-    intakeMotor.setInverted(true);
-    leftRollerMotor.setInverted(false);
-    rightRollerMotor.setInverted(true);
-    cerealizerMotor.setInverted(false);
+        intakeMotor.pidController.setFeedbackDevice(intakeMotor.encoder)
+        leftRollerMotor.pidController.setFeedbackDevice(leftRollerMotor.encoder)
+        rightRollerMotor.pidController.setFeedbackDevice(rightRollerMotor.encoder)
+        cerealizerMotor.pidController.setFeedbackDevice(cerealizerMotor.encoder)
 
-    intakeMotor.getPIDController().setFeedbackDevice(intakeMotor.getEncoder());
-    leftRollerMotor.getPIDController().setFeedbackDevice(leftRollerMotor.getEncoder());
-    rightRollerMotor.getPIDController().setFeedbackDevice(rightRollerMotor.getEncoder());
-    cerealizerMotor.getPIDController().setFeedbackDevice(cerealizerMotor.getEncoder());
+        intakeMotor.setSmartCurrentLimit(20)
+        leftRollerMotor.setSmartCurrentLimit(20)
+        rightRollerMotor.setSmartCurrentLimit(20)
+        cerealizerMotor.setSmartCurrentLimit(20)
 
-    intakeMotor.setSmartCurrentLimit(20);
-    leftRollerMotor.setSmartCurrentLimit(20);
-    rightRollerMotor.setSmartCurrentLimit(20);
-    cerealizerMotor.setSmartCurrentLimit(20);
+        intakeMotor.encoder.setVelocityConversionFactor(1.0) // 15:1 gear ratio
+        leftRollerMotor.encoder.setVelocityConversionFactor(1.0) // 20:1 gear ratio
+        rightRollerMotor.encoder.setVelocityConversionFactor(1.0) // 20:1 gear ratio
+        cerealizerMotor.encoder.setVelocityConversionFactor(1.0) // 20:1 gear ratio
 
-    intakeMotor.getEncoder().setVelocityConversionFactor(1); // 15:1 gear ratio
-    leftRollerMotor.getEncoder().setVelocityConversionFactor(1); // 20:1 gear ratio
-    rightRollerMotor.getEncoder().setVelocityConversionFactor(1); // 20:1 gear ratio
-    cerealizerMotor.getEncoder().setVelocityConversionFactor(1); // 20:1 gear ratio
-
-    intakeMotor.getPIDController().setP(0.001);
-    intakeMotor.getPIDController().setI(0);
-    intakeMotor.getPIDController().setD(0.003);
-    intakeMotor.getPIDController().setIZone(0);
-    intakeMotor.getPIDController().setFF(0.001);
-    intakeMotor.getPIDController().setOutputRange(-1, 1);
-    intakeMotor.getPIDController().setSmartMotionMaxVelocity(1800, 0);
-    intakeMotor.getPIDController().setSmartMotionMinOutputVelocity(0, 0);
-    intakeMotor.getPIDController().setSmartMotionMaxAccel(1000, 0);
+        intakeMotor.pidController.setP(0.001)
+        intakeMotor.pidController.setI(0.0)
+        intakeMotor.pidController.setD(0.003)
+        intakeMotor.pidController.setIZone(0.0)
+        intakeMotor.pidController.setFF(0.001)
+        intakeMotor.pidController.setOutputRange(-1.0, 1.0)
+        intakeMotor.pidController.setSmartMotionMaxVelocity(1800.0, 0)
+        intakeMotor.pidController.setSmartMotionMinOutputVelocity(0.0, 0)
+        intakeMotor.pidController.setSmartMotionMaxAccel(1000.0, 0)
 
 
-    cerealizerMotor.getPIDController().setP(0.0005);
-    cerealizerMotor.getPIDController().setI(0);
-    cerealizerMotor.getPIDController().setD(0.005);
-    cerealizerMotor.getPIDController().setIZone(0);
-    cerealizerMotor.getPIDController().setFF(0);
-    cerealizerMotor.getPIDController().setOutputRange(-1, 1);
-    cerealizerMotor.getPIDController().setSmartMotionMaxVelocity(5200, 0);
-    cerealizerMotor.getPIDController().setSmartMotionMaxAccel(2000, 0);
-    cerealizerMotor.getPIDController().setSmartMotionMinOutputVelocity(0, 0);
+        cerealizerMotor.pidController.setP(0.0005)
+        cerealizerMotor.pidController.setI(0.0)
+        cerealizerMotor.pidController.setD(0.005)
+        cerealizerMotor.pidController.setIZone(0.0)
+        cerealizerMotor.pidController.setFF(0.0)
+        cerealizerMotor.pidController.setOutputRange(-1.0, 1.0)
+        cerealizerMotor.pidController.setSmartMotionMaxVelocity(5200.0, 0)
+        cerealizerMotor.pidController.setSmartMotionMaxAccel(2000.0, 0)
+        cerealizerMotor.pidController.setSmartMotionMinOutputVelocity(0.0, 0)
 
-    intakeMotor.burnFlash();
-    leftRollerMotor.burnFlash();
-    rightRollerMotor.burnFlash();
-    cerealizerMotor.burnFlash();
+        intakeMotor.burnFlash()
+        leftRollerMotor.burnFlash()
+        rightRollerMotor.burnFlash()
+        cerealizerMotor.burnFlash()
+    }
 
-  }
+    override fun updateInputs(inputs: IntakeIOInputs) {
+        inputs.intakePositionDegrees = intakeMotor.encoder.position
+        inputs.intakeVelocityRpm = intakeMotor.encoder.velocity
+        inputs.intakeAppliedVolts = intakeMotor.appliedOutput * intakeMotor.busVoltage
+        inputs.intakeCurrentAmps = doubleArrayOf(intakeMotor.outputCurrent)
 
-  @Override
-  public void updateInputs(IntakeIOInputs inputs) {
-    inputs.intakePositionDegrees = intakeMotor.getEncoder().getPosition();
-    inputs.intakeVelocityRpm = intakeMotor.getEncoder().getVelocity();
-    inputs.intakeAppliedVolts = intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage();
-    inputs.intakeCurrentAmps = new double[]{intakeMotor.getOutputCurrent()};
+        inputs.cerealizerPositionDegrees = cerealizerMotor.encoder.position
+        inputs.cerealizerVelocityRpm = cerealizerMotor.encoder.velocity
+        inputs.cerealizerAppliedVolts = cerealizerMotor.appliedOutput * cerealizerMotor.busVoltage
+        inputs.cerealizerCurrentAmps = doubleArrayOf(cerealizerMotor.outputCurrent)
+    }
 
-    inputs.cerealizerPositionDegrees = cerealizerMotor.getEncoder().getPosition();
-    inputs.cerealizerVelocityRpm = cerealizerMotor.getEncoder().getVelocity();
-    inputs.cerealizerAppliedVolts = cerealizerMotor.getAppliedOutput() * cerealizerMotor.getBusVoltage();
-    inputs.cerealizerCurrentAmps = new double[]{cerealizerMotor.getOutputCurrent()};
-  }
+    override fun set(intakePercent: Double, cerealizerPercent: Double) {
+        intakeMotor.set(intakePercent)
+        leftRollerMotor.set(intakePercent)
+        rightRollerMotor.set(intakePercent)
+        cerealizerMotor.set(cerealizerPercent)
+    }
 
-  @Override
-  public void set(double intakePercent, double cerealizerPercent) {
-    intakeMotor.set(intakePercent);
-    leftRollerMotor.set(intakePercent);
-    rightRollerMotor.set(intakePercent);
-    cerealizerMotor.set(cerealizerPercent);
-  }
+    override fun setVelocity(intakeRpm: Double, cerealizerRpm: Double) {
+        // clamp the RPM to the max RPM
+        var intakeRpm = intakeRpm
+        var cerealizerRpm = cerealizerRpm
+        intakeRpm = MathUtil.clamp(intakeRpm, 0.0, MAX_RPM)
+        cerealizerRpm = MathUtil.clamp(cerealizerRpm, 0.0, MAX_RPM)
+        // kid named cambrian explosion
+        intakeMotor.pidController.setReference(intakeRpm, CANSparkBase.ControlType.kSmartVelocity, 0)
+        cerealizerMotor.pidController.setReference(cerealizerRpm, CANSparkBase.ControlType.kSmartVelocity, 0)
+    }
 
-  @Override
-  public void setVelocity(double intakeRpm, double cerealizerRpm) {
-    // clamp the RPM to the max RPM
-    intakeRpm = MathUtil.clamp(intakeRpm, 0.0, MAX_RPM);
-    cerealizerRpm = MathUtil.clamp(cerealizerRpm, 0.0, MAX_RPM);
-    // kid named cambrian explosion
-    intakeMotor.getPIDController().setReference(intakeRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
-    cerealizerMotor.getPIDController().setReference(cerealizerRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
-  }
+    override fun setIntakeVelocity(intakeRpm: Double) {
+        intakeMotor.pidController.setReference(intakeRpm, CANSparkBase.ControlType.kSmartVelocity, 0)
+    }
 
-  @Override
-  public void setIntakeVelocity(double intakeRpm) {
-    intakeMotor.getPIDController().setReference(intakeRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
-  }
+    override fun setCerealizerVelocity(cerealizerRpm: Double) {
+        cerealizerMotor.pidController.setReference(cerealizerRpm, CANSparkBase.ControlType.kSmartVelocity, 0)
+    }
 
-  @Override
-  public void setCerealizerVelocity(double cerealizerRpm) {
-    cerealizerMotor.getPIDController().setReference(cerealizerRpm, CANSparkBase.ControlType.kSmartVelocity, 0);
-  }
+    override fun setCerealizer(a: Double) {
+        cerealizerMotor.set(a)
+    }
 
-  @Override
-  public void setCerealizer(double a) {
-    cerealizerMotor.set(a);
-  }
-
-  @Override
-  public void setIntake(double a) {
-    intakeMotor.set(a);
-  }
+    override fun setIntake(a: Double) {
+        intakeMotor.set(a)
+    }
 
 
-  @Override
-  public void setIntakeVoltage(double volts) {
-    intakeMotor.setVoltage(volts);
-  }
+    override fun setIntakeVoltage(volts: Double) {
+        intakeMotor.setVoltage(volts)
+    }
 
-  @Override
-  public void setCerealizerVoltage(double volts) {
-    cerealizerMotor.setVoltage(volts);
-  }
+    override fun setCerealizerVoltage(volts: Double) {
+        cerealizerMotor.setVoltage(volts)
+    }
 
 
-  public DoubleSupplier getColorSensorProximity() {
-    return colorSensor::getProximity;
-  }
+    override val colorSensorProximity: DoubleSupplier
+        get() = DoubleSupplier { colorSensor.proximity.toDouble() }
 
-  public DoubleSupplier getColorSensorRed() {
-    return colorSensor::getRed;
-  }
+    override val colorSensorRed: DoubleSupplier
+        get() = DoubleSupplier { colorSensor.red.toDouble() }
 
-  public DoubleSupplier getColorSensorGreen() {
-    return colorSensor::getGreen;
-  }
+    override val colorSensorGreen: DoubleSupplier
+        get() = DoubleSupplier { colorSensor.green.toDouble() }
 
-  public DoubleSupplier getColorSensorBlue() {
-    return colorSensor::getBlue;
-  }
+    override val colorSensorBlue: DoubleSupplier
+        get() = DoubleSupplier { colorSensor.blue.toDouble() }
 
-  public DoubleSupplier getColorSensorIR() {
-    return colorSensor::getIR;
-  }
+    override val colorSensorIR: DoubleSupplier
+        get() = DoubleSupplier { colorSensor.ir.toDouble() }
 
-  public Supplier<Color> getColorSensorColor() {
-    return colorSensor::getColor;
-  }
+    override val colorSensorColor: Supplier<Color>
+        get() = Supplier { colorSensor.color }
+
+    companion object {
+        const val MAX_RPM: Double = 5700.0
+    }
 }

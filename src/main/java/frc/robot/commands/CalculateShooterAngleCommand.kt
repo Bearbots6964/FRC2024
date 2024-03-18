@@ -1,22 +1,18 @@
 package frc.robot.commands
 
-import edu.wpi.first.wpilibj2.command.Command
+import edu.wpi.first.wpilibj2.command.InstantCommand
 import frc.robot.subsystems.ArmSubsystem
-import java.util.function.DoubleSupplier
+import frc.robot.util.LimelightHelpers
 
 /**
  *
  */
-class MoveArmCommand(
-    /**
-     *
-     */
-    var speed: DoubleSupplier) : Command() {
-    private val armSubsystem: ArmSubsystem = ArmSubsystem.instance
+class CalculateShooterAngleCommand : InstantCommand() {
     /**
      *
      */
     var angle: Double = 0.0
+    private val armSubsystem: ArmSubsystem = ArmSubsystem.instance
 
     init {
         // each subsystem used by the command must be passed into the
@@ -28,7 +24,7 @@ class MoveArmCommand(
      * The initial subroutine of a command.  Called once when the command is initially scheduled.
      */
     override fun initialize() {
-        angle = armSubsystem.angle
+        armSubsystem.getArmAngleForShooting(LimelightHelpers.getBotPose3d("limelight-back"))
     }
 
     /**
@@ -36,9 +32,7 @@ class MoveArmCommand(
      * (That is, it is called repeatedly until [.isFinished]) returns true.)
      */
     override fun execute() {
-        //armSubsystem.moveArmButWithVelocity(speed.getAsDouble() * 144);
-        angle += speed.asDouble
-        if (speed.asDouble != -1.0) armSubsystem.moveArmToAngle(angle)
+        armSubsystem.moveArmToAngle(angle)
     }
 
     /**
@@ -71,6 +65,5 @@ class MoveArmCommand(
      * @param interrupted whether the command was interrupted/canceled
      */
     override fun end(interrupted: Boolean) {
-        armSubsystem.moveArm(0.0)
     }
 }
