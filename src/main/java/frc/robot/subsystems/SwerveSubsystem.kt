@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import frc.robot.util.Constants.AutonomousConstants
 import frc.robot.util.LimelightHelpers
+import org.littletonrobotics.junction.Logger
 import swervelib.SwerveController
 import swervelib.SwerveDrive
 import swervelib.SwerveDriveTest
@@ -104,15 +105,13 @@ class SwerveSubsystem : SubsystemBase {
                 4.5,  // Max module speed, in m/s
                 swerveDrive.swerveDriveConfiguration.driveBaseRadiusMeters,  // Drive base radius in meters. Distance from robot center to furthest module.
                 ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
-            ),
-            {
+            ), {
                 // Boolean supplier that controls when the path will be mirrored for the red alliance
                 // This will flip the path being followed to the red side of the field.
                 // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
                 val alliance = DriverStation.getAlliance()
                 if (alliance.isPresent) alliance.get() == Alliance.Red else false
-            },
-            this // Reference to this subsystem to set requirements
+            }, this // Reference to this subsystem to set requirements
         )
     }
 
@@ -127,9 +126,7 @@ class SwerveSubsystem : SubsystemBase {
             if (LimelightHelpers.getTV(camera)) {
                 drive(
                     getTargetSpeeds(
-                        0.0,
-                        0.0,
-                        Rotation2d.fromDegrees(LimelightHelpers.getTX(camera))
+                        0.0, 0.0, Rotation2d.fromDegrees(LimelightHelpers.getTX(camera))
                     )
                 ) // Not sure if this will work, more math may be required.
             }
@@ -158,15 +155,12 @@ class SwerveSubsystem : SubsystemBase {
         val path = PathPlannerPath.fromPathFile("Go to red speaker")
         // Create the constraints to use while pathfinding
         val constraints = PathConstraints(
-            swerveDrive.maximumVelocity, 4.0,
-            swerveDrive.maximumAngularVelocity, Units.degreesToRadians(720.0)
+            swerveDrive.maximumVelocity, 4.0, swerveDrive.maximumAngularVelocity, Units.degreesToRadians(720.0)
         )
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         return AutoBuilder.pathfindToPose(
-            pose,
-            constraints,
-            0.0,  // Goal end velocity in meters/sec
+            pose, constraints, 0.0,  // Goal end velocity in meters/sec
             0.0 // Rotation delay distance in meters. This is how far the robot should travel before attempting to rotate.
         )
     }
@@ -182,7 +176,7 @@ class SwerveSubsystem : SubsystemBase {
      */
     fun driveCommand(
         translationX: DoubleSupplier, translationY: DoubleSupplier, headingX: DoubleSupplier,
-        headingY: DoubleSupplier
+        headingY: DoubleSupplier,
     ): Command {
         // swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
         return run {
@@ -191,7 +185,8 @@ class SwerveSubsystem : SubsystemBase {
             // Make the robot move
             driveFieldOriented(
                 swerveDrive.swerveController.getTargetSpeeds(
-                    xInput, yInput,
+                    xInput,
+                    yInput,
                     headingX.asDouble,
                     headingY.asDouble,
                     swerveDrive.odometryHeading.radians,
@@ -233,10 +228,8 @@ class SwerveSubsystem : SubsystemBase {
     fun sysIdDriveMotorCommand(): Command {
         return SwerveDriveTest.generateSysIdCommand(
             SwerveDriveTest.setDriveSysIdRoutine(
-                SysIdRoutine.Config(),
-                this, swerveDrive, 12.0
-            ),
-            3.0, 5.0, 3.0
+                SysIdRoutine.Config(), this, swerveDrive, 12.0
+            ), 3.0, 5.0, 3.0
         )
     }
 
@@ -248,10 +241,8 @@ class SwerveSubsystem : SubsystemBase {
     fun sysIdAngleMotorCommand(): Command {
         return SwerveDriveTest.generateSysIdCommand(
             SwerveDriveTest.setAngleSysIdRoutine(
-                SysIdRoutine.Config(),
-                this, swerveDrive
-            ),
-            3.0, 5.0, 3.0
+                SysIdRoutine.Config(), this, swerveDrive
+            ), 3.0, 5.0, 3.0
         )
     }
 
@@ -266,7 +257,7 @@ class SwerveSubsystem : SubsystemBase {
     fun driveCommand(
         translationX: DoubleSupplier,
         translationY: DoubleSupplier,
-        angularRotationX: DoubleSupplier
+        angularRotationX: DoubleSupplier,
     ): Command {
         return run {
             // Make the robot move
@@ -274,10 +265,7 @@ class SwerveSubsystem : SubsystemBase {
                 Translation2d(
                     translationX.asDouble.pow(3.0) * swerveDrive.maximumVelocity,
                     translationY.asDouble.pow(3.0) * swerveDrive.maximumVelocity
-                ),
-                angularRotationX.asDouble * swerveDrive.maximumAngularVelocity,
-                true,
-                false
+                ), angularRotationX.asDouble * swerveDrive.maximumAngularVelocity, true, false
             )
         }
     }
@@ -288,7 +276,7 @@ class SwerveSubsystem : SubsystemBase {
     fun driveCommandNonRel(
         translationX: DoubleSupplier,
         translationY: DoubleSupplier,
-        angularRotationX: DoubleSupplier
+        angularRotationX: DoubleSupplier,
     ): Command {
         return run {
             // Make the robot move
@@ -296,10 +284,7 @@ class SwerveSubsystem : SubsystemBase {
                 Translation2d(
                     translationX.asDouble.pow(3.0) * swerveDrive.maximumVelocity,
                     translationY.asDouble.pow(3.0) * swerveDrive.maximumVelocity
-                ),
-                angularRotationX.asDouble * swerveDrive.maximumAngularVelocity,
-                false,
-                false
+                ), angularRotationX.asDouble * swerveDrive.maximumAngularVelocity, false, false
             )
         }
     }
@@ -320,10 +305,7 @@ class SwerveSubsystem : SubsystemBase {
      */
     fun drive(translation: Translation2d?, rotation: Double, fieldRelative: Boolean) {
         swerveDrive.drive(
-            translation,
-            rotation,
-            fieldRelative,
-            false
+            translation, rotation, fieldRelative, false
         ) // Open loop is disabled since it shouldn't be used most of the time.
     }
 
@@ -349,15 +331,21 @@ class SwerveSubsystem : SubsystemBase {
      *
      */
     override fun periodic() {
-        if (LimelightHelpers.getTV("limelight-back")) swerveDrive.addVisionMeasurement(
+//        if (LimelightHelpers.getTV("limelight-back")) swerveDrive.addVisionMeasurement(
+//            LimelightHelpers.getBotPose2d_wpiRed(
+//                "limelight-back"
+//            ),
+//            Timer.getFPGATimestamp() - (LimelightHelpers.getLatency_Pipeline("limelight-back") + LimelightHelpers.getLatency_Capture(
+//                "limelight-back"
+//            )) / 1000.0
+//        )
+        Logger.recordOutput(
+            "Limelight Pose",
             LimelightHelpers.getBotPose2d_wpiRed(
                 "limelight-back"
             ),
-            Timer.getFPGATimestamp() - (LimelightHelpers.getLatency_Pipeline("limelight-back") + LimelightHelpers.getLatency_Capture(
-                "limelight-back"
-            )) / 1000.0
         )
-
+        Logger.recordOutput("Pose", pose)
         // PathPlannerLogging.logCurrentPose(getPose());
         swerveDrive.updateOdometry()
 
@@ -465,12 +453,7 @@ class SwerveSubsystem : SubsystemBase {
         xInput = xInput.pow(3.0)
         yInput = yInput.pow(3.0)
         return swerveDrive.swerveController.getTargetSpeeds(
-            xInput,
-            yInput,
-            headingX,
-            headingY,
-            heading.radians,
-            maximumSpeed
+            xInput, yInput, headingX, headingY, heading.radians, maximumSpeed
         )
     }
 
@@ -489,11 +472,7 @@ class SwerveSubsystem : SubsystemBase {
         xInput = xInput.pow(3.0)
         yInput = yInput.pow(3.0)
         return swerveDrive.swerveController.getTargetSpeeds(
-            xInput,
-            yInput,
-            angle.radians,
-            heading.radians,
-            maximumSpeed
+            xInput, yInput, angle.radians, heading.radians, maximumSpeed
         )
     }
 

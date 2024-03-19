@@ -7,7 +7,7 @@ import java.util.function.DoubleSupplier
 /**
  *
  */
-class IntakeCommand2(private val intake: Intake, private val speed: DoubleSupplier) : Command() {
+class ReverseIntakeCommand(private val intake: Intake, private val speed: DoubleSupplier) : Command() {
     init {
         // each subsystem used by the command must be passed into the
         // addRequirements() method (which takes a vararg of Subsystem)

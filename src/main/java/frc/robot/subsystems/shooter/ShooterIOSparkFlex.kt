@@ -46,14 +46,14 @@ class ShooterIOSparkFlex : ShooterIO {
 
         val i = SimpleMotorFeedforward(0.028196, 0.0017838, 0.00020814)
         // use that to set the feed forward for the lower motor
-        lowerPID.setFF(i.calculate(3750.0))
-        upperPID.setFF(i.calculate(3750.0))
+        lowerPID.setP(0.0003)
+        upperPID.setP(0.0003)
 
-        lowerPID.setP(0.0005)
+        lowerPID.setFF(0.0002)
         lowerPID.setI(0.0)
         lowerPID.setD(0.0)
 
-        upperPID.setP(0.0005)
+        upperPID.setFF(0.0002)
         upperPID.setI(0.0)
         upperPID.setD(0.0)
     }

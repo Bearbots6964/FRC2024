@@ -24,7 +24,7 @@ class IntakeCommand(private val intake: Intake, private val speed: DoubleSupplie
      *
      */
     override fun execute() {
-        intake[0.25] = -0.25
+        intake.set(0.25, -0.25)
     }
 
     /**
@@ -39,6 +39,6 @@ class IntakeCommand(private val intake: Intake, private val speed: DoubleSupplie
      *
      */
     override fun end(interrupted: Boolean) {
-        intake[0.0] = 0.0
+        intake.set(0.0, 0.0)
     }
 }

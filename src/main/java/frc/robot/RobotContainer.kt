@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.DriverStation.Alliance
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.XboxController
+import edu.wpi.first.wpilibj.XboxController.Button
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.InstantCommand
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
@@ -26,7 +27,6 @@ import frc.robot.subsystems.intake.IntakeIOSparkMax
 import frc.robot.subsystems.shooter.Shooter
 import frc.robot.subsystems.shooter.ShooterIOSparkFlex
 import frc.robot.util.Constants.OperatorConstants
-import java.util.function.DoubleSupplier
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -47,7 +47,8 @@ class RobotContainer {
     private val aimAndPickUpNoteCommand: Command
     private val armSysIdCommand: Command
     private val moveArmCommand: Command
-    private val intakeCommand2: Command
+    private val reverseIntakeCommand: Command
+    private val homeArmCommand: Command
 
     private val absoluteFieldDrive: Command
 
@@ -55,6 +56,7 @@ class RobotContainer {
      *
      */
     private var driverXbox: XboxController = XboxController(0)
+
     /**
      *
      */
@@ -72,8 +74,7 @@ class RobotContainer {
             drivebase.driveToPose(
                 Pose2d(
                     Translation2d(
-                        2.720,
-                        2.579
+                        2.720, 2.579
                     ), Rotation2d.fromDegrees(180.0)
                 )
             ).andThen(drivebase.driveToPose(Pose2d(Translation2d(2.720, 2.579), Rotation2d.fromDegrees(180.0))))
@@ -83,11 +84,11 @@ class RobotContainer {
         aimAndPickUpNoteCommand = AimAndPickUpNoteCommand(drivebase, VisionSubsystem.instance, intake)
         armSysIdCommand = ArmSubsystem.generateSysIdCommand(armSubsystem.sysId, 2.0, 3.5, 1.5)
         moveArmCommand = MoveArmCommand { MathUtil.applyDeadband(shooterXbox.rightY, 0.1) }
-        intakeCommand2 = IntakeCommand2(intake) { MathUtil.applyDeadband(shooterXbox.leftTriggerAxis, 0.1) }
+        reverseIntakeCommand = ReverseIntakeCommand(intake) { MathUtil.applyDeadband(shooterXbox.leftTriggerAxis, 0.1) }
+        homeArmCommand = HomeArmCommand(armSubsystem)
         val invert = invert
 
-        absoluteFieldDrive = AbsoluteFieldDrive(
-            drivebase,
+        absoluteFieldDrive = AbsoluteFieldDrive(drivebase,
             { MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) * invert },
             { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
             { driverXbox.rightX * invert })
@@ -96,13 +97,16 @@ class RobotContainer {
         // controls are front-left positive
         // left stick controls translation
         // right stick controls the desired angle NOT angular rotation
-        val driveFieldOrientedDirectAngle = drivebase.driveCommand(
-            { MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) * invert },
+        val driveFieldOrientedDirectAngle = drivebase.driveCommand({
+            MathUtil.applyDeadband(
+                driverXbox.leftY,
+                OperatorConstants.LEFT_Y_DEADBAND
+            ) * invert
+        },
             { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
             { driverXbox.rightX * invert },
             { driverXbox.rightY * invert })
-        val closedAbsoluteDriveAdv = AbsoluteDriveAdv(
-            drivebase,
+        val closedAbsoluteDriveAdv = AbsoluteDriveAdv(drivebase,
             { MathUtil.applyDeadband(driverXbox.leftY * invert, OperatorConstants.LEFT_Y_DEADBAND) },
             { MathUtil.applyDeadband(driverXbox.leftX * invert, OperatorConstants.LEFT_X_DEADBAND) },
             { MathUtil.applyDeadband(driverXbox.rightX * invert, OperatorConstants.RIGHT_X_DEADBAND) },
@@ -116,24 +120,32 @@ class RobotContainer {
         // controls are front-left positive
         // left stick controls translation
         // right stick controls the angular velocity of the robot
-        val driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
-            { -MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) * invert },
+        val driveFieldOrientedAnglularVelocity = drivebase.driveCommand({
+            -MathUtil.applyDeadband(
+                driverXbox.leftY,
+                OperatorConstants.LEFT_Y_DEADBAND
+            ) * invert
+        },
             { -MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
             { driverXbox.getRawAxis(4) * invert })
 
-        val driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
-            { MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) * invert },
+        val driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand({
+            MathUtil.applyDeadband(
+                driverXbox.leftY,
+                OperatorConstants.LEFT_Y_DEADBAND
+            ) * invert
+        },
             { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
             { driverXbox.getRawAxis(2) * invert })
 
         val sysIdForDrive = drivebase.sysIdDriveMotorCommand()
         val sysIdForAngle = drivebase.sysIdAngleMotorCommand()
 
-        val driveFieldOrientedDirectAngleForTesting = drivebase.driveCommand(
-            { MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) },
-            { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) },
-            { driverXbox.rightX },
-            { driverXbox.rightY })
+        val driveFieldOrientedDirectAngleForTesting =
+            drivebase.driveCommand({ MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) },
+                { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) },
+                { driverXbox.rightX },
+                { driverXbox.rightY })
 
         drivebase.defaultCommand =
             if (!RobotBase.isSimulation()) driveFieldOrientedAnglularVelocity else driveFieldOrientedDirectAngleSim
@@ -165,26 +177,17 @@ class RobotContainer {
     private fun configureBindings() {
         // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
-        JoystickButton(driverXbox, 1).onTrue((InstantCommand({ drivebase.zeroGyro() })))
-        JoystickButton(driverXbox, XboxController.Button.kX.value).whileTrue(aimAtLimelightCommand)
-        JoystickButton(driverXbox, 2).whileTrue(driveToPoseCommand)
-        JoystickButton(driverXbox, XboxController.Button.kY.value).whileTrue(rotateCommand)
+        JoystickButton(driverXbox, Button.kA.value).onTrue((InstantCommand({ drivebase.zeroGyro() })))
+        JoystickButton(driverXbox, Button.kX.value).whileTrue(aimAtLimelightCommand)
+        JoystickButton(driverXbox, Button.kB.value).whileTrue(driveToPoseCommand)
+        JoystickButton(driverXbox, Button.kY.value).whileTrue(rotateCommand)
+        JoystickButton(driverXbox, Button.kLeftBumper.value).whileTrue(intakeCommand)
+        JoystickButton(driverXbox, Button.kY.value).whileTrue(aimAndPickUpNoteCommand)
 
 
-        JoystickButton(
-            shooterXbox,
-            XboxController.Button.kLeftBumper.value
-        ).whileTrue(intakeCommand) // independent of speed
-        JoystickButton(driverXbox, XboxController.Button.kLeftBumper.value).whileTrue(intakeCommand)
-        JoystickButton(driverXbox, XboxController.Button.kY.value).whileTrue(aimAndPickUpNoteCommand)
-
-        JoystickButton(shooterXbox, XboxController.Button.kA.value).whileTrue(moveArmCommand)
-        JoystickButton(
-            shooterXbox,
-            XboxController.Button.kB.value
-        ).whileTrue(shooter.generateSysIdCommand(shooter.sysIdRoutine, 2.0, 10.0, 10.0))
-
-        JoystickButton(shooterXbox, XboxController.Button.kRightBumper.value).whileTrue(intakeCommand2)
+        JoystickButton(shooterXbox, Button.kLeftBumper.value).whileTrue(intakeCommand) // independent of speed
+        JoystickButton(shooterXbox, Button.kRightBumper.value).whileTrue(reverseIntakeCommand)
+        JoystickButton(shooterXbox, Button.kA.value).onTrue(homeArmCommand)
 
 
 

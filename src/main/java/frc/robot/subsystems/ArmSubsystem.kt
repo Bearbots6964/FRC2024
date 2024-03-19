@@ -18,6 +18,9 @@ import org.littletonrobotics.junction.*
 import kotlin.math.atan2
 
 class ArmSubsystem private constructor() : SubsystemBase() {
+    var hasHitLowerLimit: Boolean = false
+        get() = reverseLimitSwitch.isPressed
+
     // With eager singleton initialization, any static variables/fields used in the
     // constructor must appear before the "INSTANCE" variable so that they are initialized
     // before the constructor is called when the "INSTANCE" variable initializes.
@@ -35,7 +38,7 @@ class ArmSubsystem private constructor() : SubsystemBase() {
     private val reverseLimitSwitch: SparkLimitSwitch
 
     private val pidController: SparkPIDController
-    private val encoder: SparkAbsoluteEncoder = rightMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle)
+    private val encoder: SparkAbsoluteEncoder = leftMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle)
     private var maxRange = 0.0 // amount of revolutions (or other unit) it takes to move the arm from min to max
     private val setpoint: Double
 
@@ -82,9 +85,7 @@ class ArmSubsystem private constructor() : SubsystemBase() {
     // Takes a double 0 to 1 as a parameter, where 0 is the arm at its lower limit
     // and 1 at its upper limit.
     fun moveArm(p: Double) {
-        val distanceFromMin = p * maxRange
-        val distanceFromFinal = distanceFromMin - encoder.position // Final - inital = delta position.
-        rotate(distanceFromFinal)
+        leftMotor.set(p)
     }
 
 
@@ -94,6 +95,8 @@ class ArmSubsystem private constructor() : SubsystemBase() {
         ) { state: SysIdRoutineLog.State -> Logger.recordOutput("SysIdTestState", state.toString()) },
         Mechanism({ v: Measure<Voltage?> -> this.setVoltage(v.`in`(Units.Volts)) }, null, this)
     )
+
+
 
     /**
      * Creates a new instance of this ArmSubsystem. This constructor is private since this class
@@ -116,27 +119,28 @@ class ArmSubsystem private constructor() : SubsystemBase() {
         rightMotor.setSmartCurrentLimit(40)
         rightMotor.burnFlash()
 
-        pidController = rightMotor.pidController
+        pidController = leftMotor.pidController
 
 
-        forwardLimitSwitch = rightMotor.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen)
-        reverseLimitSwitch = rightMotor.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen)
+        forwardLimitSwitch = leftMotor.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen)
+        reverseLimitSwitch = leftMotor.getReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen)
 
         forwardLimitSwitch.enableLimitSwitch(true)
         reverseLimitSwitch.enableLimitSwitch(true)
 
         pidController.setFeedbackDevice(encoder)
-        pidController.setP(0.01)
+        pidController.setP(0.016)
         pidController.setI(0.0)
-        pidController.setD(0.0)
-        pidController.setPositionPIDWrappingMinInput(-0.75)
-        pidController.setPositionPIDWrappingMaxInput(0.75)
+        pidController.setD(0.016)
+        pidController.setFF(0.001)
+
 
         setpoint = encoder.position
 
         SmartDashboard.putNumber("Arm Setpoint", setpoint)
 
 
+        pidController.setOutputRange(-0.75, 0.75)
         encoder.setPositionConversionFactor(360.0) // 1 rotation = 360 degrees
 
 
@@ -149,7 +153,6 @@ class ArmSubsystem private constructor() : SubsystemBase() {
 //    pidController.setD(kD);
 //    pidController.setIZone(kIz);
 //    pidController.setFF(kFF);
-//    pidController.setOutputRange(kMinOutput, kMaxOutput);
         pidController.setFeedbackDevice(encoder)
     }
 
@@ -174,7 +177,9 @@ class ArmSubsystem private constructor() : SubsystemBase() {
 
         //pidController.setReference(SmartDashboard.getNumber("Arm Setpoint", setpoint), CANSparkMax.ControlType.kPosition);
     }
-
+    fun homeArm() {
+        moveArmToAngle(40.0)
+    }
     fun getArmAngleForShooting(robotPose: Pose3d): Double {
         val alliance = DriverStation.getAlliance().get()
 

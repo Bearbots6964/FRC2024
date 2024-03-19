@@ -78,7 +78,7 @@ private constructor() : SubsystemBase() {
     // if your limelight and target are mounted at the same or similar heights, use "ta" (area) for target ranging rather than "ty"
     fun limelightRangeProportional(): Double {
         val kP = .1
-        var targetingForwardSpeed = LimelightHelpers.getTY("limelight-front") * kP
+        var targetingForwardSpeed = (LimelightHelpers.getTY("limelight-front") + 28.1) * kP
         targetingForwardSpeed *= SwerveSubsystem.instance.swerveDrive.maximumVelocity
         targetingForwardSpeed *= -1.0
         return targetingForwardSpeed
