@@ -151,7 +151,7 @@ class Intake(val io: IntakeIO) : SubsystemBase() {
 
     }
 
-    fun getColorSensorProximity() : DoubleSupplier {
-        return  io::colorSensorProximity.get()
-    }
+//    fun getColorSensorProximity() : DoubleSupplier {
+//        return  io::colorSensorProximity.get()
+//    }
 }

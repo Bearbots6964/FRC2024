@@ -93,7 +93,7 @@ class RobotContainer {
         armSysIdCommand = ArmSubsystem.generateSysIdCommand(armSubsystem.sysId, 2.0, 3.5, 1.5)
         moveArmCommand = MoveArmCommand { MathUtil.applyDeadband(shooterXbox.rightY, 0.1) }
         reverseIntakeCommand = ReverseIntakeCommand(intake) { MathUtil.applyDeadband(shooterXbox.leftTriggerAxis, 0.1) }
-        homeArmCommand = HomeArmCommand(armSubsystem)
+        homeArmCommand = HomeArmCommand()
         frostedFlakesCommand = FrostedFlakesCommand(intake)
         val invert = invert
 

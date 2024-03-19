@@ -39,8 +39,8 @@ class IntakeIOSparkMax : IntakeIO {
         cerealizerMotor.setIdleMode(IdleMode.kBrake)
 
         intakeMotor.inverted = true
-        leftRollerMotor.inverted = false
-        rightRollerMotor.inverted = true
+        leftRollerMotor.inverted = true
+        rightRollerMotor.inverted = false
         cerealizerMotor.inverted = false
 
         intakeMotor.pidController.setFeedbackDevice(intakeMotor.encoder)
