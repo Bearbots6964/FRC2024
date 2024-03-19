@@ -331,14 +331,14 @@ class SwerveSubsystem : SubsystemBase {
      *
      */
     override fun periodic() {
-//        if (LimelightHelpers.getTV("limelight-back")) swerveDrive.addVisionMeasurement(
-//            LimelightHelpers.getBotPose2d_wpiRed(
-//                "limelight-back"
-//            ),
-//            Timer.getFPGATimestamp() - (LimelightHelpers.getLatency_Pipeline("limelight-back") + LimelightHelpers.getLatency_Capture(
-//                "limelight-back"
-//            )) / 1000.0
-//        )
+        if (LimelightHelpers.getTV("limelight-back")) swerveDrive.addVisionMeasurement(
+            LimelightHelpers.getBotPose2d_wpiRed(
+                "limelight-back"
+            ),
+            Timer.getFPGATimestamp() - (LimelightHelpers.getLatency_Pipeline("limelight-back") + LimelightHelpers.getLatency_Capture(
+                "limelight-back"
+            )) / 1000.0
+        )
         Logger.recordOutput(
             "Limelight Pose",
             LimelightHelpers.getBotPose2d_wpiRed(
@@ -347,9 +347,7 @@ class SwerveSubsystem : SubsystemBase {
         )
         Logger.recordOutput("Pose", pose)
         // PathPlannerLogging.logCurrentPose(getPose());
-        swerveDrive.updateOdometry()
 
-        pose
     }
 
     /**

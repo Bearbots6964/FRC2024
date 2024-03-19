@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.XboxController.Button
 import edu.wpi.first.wpilibj2.command.Command
+import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.InstantCommand
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import frc.robot.commands.*
@@ -49,8 +50,13 @@ class RobotContainer {
     private val moveArmCommand: Command
     private val reverseIntakeCommand: Command
     private val homeArmCommand: Command
+    private val frostedFlakesCommand: Command
 
     private val absoluteFieldDrive: Command
+
+    private var shooterRunning: Boolean = false
+    private var hasNote: Boolean = false
+
 
     /**
      *
@@ -67,10 +73,12 @@ class RobotContainer {
      */
     init {
         intakeCommand = IntakeCommand(intake) { MathUtil.applyDeadband(shooterXbox.leftTriggerAxis, 0.1) }
-        shootCommand = ShootCommand(shooter) { MathUtil.applyDeadband(shooterXbox.rightTriggerAxis, 0.1) * 5700 }
+        shootCommand = ShootCommand(shooter, {MathUtil.applyDeadband(shooterXbox.rightTriggerAxis, 0.1)},
+            { shooterRunning = true }, { shooterRunning = false })
         aimAtLimelightCommand = AimAtLimelightCommand(drivebase, VisionSubsystem.instance)
         rotateCommand = RotateCommand(drivebase)
-        driveToPoseCommand = ShootCommand(shooter, { 4000.0 }).alongWith(
+        driveToPoseCommand = ShootCommand(shooter, { 4000.0 },
+            { shooterRunning = true }, { shooterRunning = false }).alongWith(
             drivebase.driveToPose(
                 Pose2d(
                     Translation2d(
@@ -86,6 +94,7 @@ class RobotContainer {
         moveArmCommand = MoveArmCommand { MathUtil.applyDeadband(shooterXbox.rightY, 0.1) }
         reverseIntakeCommand = ReverseIntakeCommand(intake) { MathUtil.applyDeadband(shooterXbox.leftTriggerAxis, 0.1) }
         homeArmCommand = HomeArmCommand(armSubsystem)
+        frostedFlakesCommand = FrostedFlakesCommand(intake)
         val invert = invert
 
         absoluteFieldDrive = AbsoluteFieldDrive(drivebase,
@@ -185,7 +194,8 @@ class RobotContainer {
         JoystickButton(driverXbox, Button.kY.value).whileTrue(aimAndPickUpNoteCommand)
 
 
-        JoystickButton(shooterXbox, Button.kLeftBumper.value).whileTrue(intakeCommand) // independent of speed
+        // for the intake command, if the shooter is running, execute the frosted flakes command, and otherwise, execute the intake command
+        JoystickButton(shooterXbox, Button.kLeftBumper.value).whileTrue(Commands.either(frostedFlakesCommand, intakeCommand) { shooterRunning })
         JoystickButton(shooterXbox, Button.kRightBumper.value).whileTrue(reverseIntakeCommand)
         JoystickButton(shooterXbox, Button.kA.value).onTrue(homeArmCommand)
 

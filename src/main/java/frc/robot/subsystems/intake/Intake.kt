@@ -11,6 +11,7 @@ import frc.robot.subsystems.SwerveSubsystem
 import frc.robot.util.Constants.IntakeConstants
 import org.littletonrobotics.junction.*
 import java.util.function.DoubleSupplier
+import java.util.function.IntSupplier
 import kotlin.math.abs
 
 // Not doing the sim because I would like to retain what little sanity I have left
@@ -146,5 +147,11 @@ class Intake(val io: IntakeIO) : SubsystemBase() {
                 .andThen(Commands.waitSeconds(delay))
                 .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(dynamicTimeout))
         }
+
+
+    }
+
+    fun getColorSensorProximity() : DoubleSupplier {
+        return  io::colorSensorProximity.get()
     }
 }

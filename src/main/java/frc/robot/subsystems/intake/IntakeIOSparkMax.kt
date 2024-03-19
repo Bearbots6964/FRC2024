@@ -5,8 +5,10 @@ import com.revrobotics.CANSparkBase.IdleMode
 import com.revrobotics.CANSparkLowLevel
 import com.revrobotics.CANSparkMax
 import com.revrobotics.ColorSensorV3
+import com.revrobotics.REVLibError
 import edu.wpi.first.math.MathUtil
 import edu.wpi.first.wpilibj.I2C
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.util.Color
 import frc.robot.subsystems.intake.IntakeIO.IntakeIOInputs
 import frc.robot.util.Constants.MotorConstants
@@ -20,7 +22,10 @@ class IntakeIOSparkMax : IntakeIO {
     private val rightRollerMotor = CANSparkMax(MotorConstants.RIGHT_ROLLER_MOTOR, CANSparkLowLevel.MotorType.kBrushless)
     private val cerealizerMotor = CANSparkMax(MotorConstants.CEREALIZER_MOTOR, CANSparkLowLevel.MotorType.kBrushless)
 
-    private val colorSensor = ColorSensorV3(I2C.Port.kMXP)
+    private var intakeError: REVLibError? = null
+    private var leftRollerError: REVLibError? = null
+    private var rightRollerError: REVLibError? = null
+    private var cerealizerError: REVLibError? = null
 
     init {
         intakeMotor.setCANTimeout(250)
@@ -90,6 +95,8 @@ class IntakeIOSparkMax : IntakeIO {
         inputs.cerealizerVelocityRpm = cerealizerMotor.encoder.velocity
         inputs.cerealizerAppliedVolts = cerealizerMotor.appliedOutput * cerealizerMotor.busVoltage
         inputs.cerealizerCurrentAmps = doubleArrayOf(cerealizerMotor.outputCurrent)
+
+        SmartDashboard.putNumber("Color Sensor Proximity", Companion.colorSensor.proximity.toDouble())
     }
 
     override fun set(intakePercent: Double, cerealizerPercent: Double) {
@@ -109,6 +116,8 @@ class IntakeIOSparkMax : IntakeIO {
         intakeMotor.pidController.setReference(intakeRpm, CANSparkBase.ControlType.kSmartVelocity, 0)
         cerealizerMotor.pidController.setReference(cerealizerRpm, CANSparkBase.ControlType.kSmartVelocity, 0)
     }
+
+
 
     override fun setIntakeVelocity(intakeRpm: Double) {
         intakeMotor.pidController.setReference(intakeRpm, CANSparkBase.ControlType.kSmartVelocity, 0)
@@ -137,24 +146,25 @@ class IntakeIOSparkMax : IntakeIO {
 
 
     override val colorSensorProximity: DoubleSupplier
-        get() = DoubleSupplier { colorSensor.proximity.toDouble() }
+        get() = DoubleSupplier { Companion.colorSensor.proximity.toDouble() }
 
     override val colorSensorRed: DoubleSupplier
-        get() = DoubleSupplier { colorSensor.red.toDouble() }
+        get() = DoubleSupplier { Companion.colorSensor.red.toDouble() }
 
     override val colorSensorGreen: DoubleSupplier
-        get() = DoubleSupplier { colorSensor.green.toDouble() }
+        get() = DoubleSupplier { Companion.colorSensor.green.toDouble() }
 
     override val colorSensorBlue: DoubleSupplier
-        get() = DoubleSupplier { colorSensor.blue.toDouble() }
+        get() = DoubleSupplier { Companion.colorSensor.blue.toDouble() }
 
     override val colorSensorIR: DoubleSupplier
-        get() = DoubleSupplier { colorSensor.ir.toDouble() }
+        get() = DoubleSupplier { Companion.colorSensor.ir.toDouble() }
 
     override val colorSensorColor: Supplier<Color>
-        get() = Supplier { colorSensor.color }
+        get() = Supplier { Companion.colorSensor.color }
 
     companion object {
         const val MAX_RPM: Double = 5700.0
+        val colorSensor = ColorSensorV3(I2C.Port.kMXP)
     }
 }

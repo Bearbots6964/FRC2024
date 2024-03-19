@@ -7,7 +7,9 @@ import java.util.function.DoubleSupplier
 /**
  *
  */
-class ShootCommand(private val shooter: Shooter, private val speed: DoubleSupplier) : Command() {
+class ShootCommand(private val shooter: Shooter, private val speed: DoubleSupplier, private val shooterIsRunning: () -> Unit, private val shooterIsNotRunning: () -> Unit) : Command() {
+
+    val maxRpm = 5700.0
     init {
         // each subsystem used by the command must be passed into the
         // addRequirements() method (which takes a vararg of Subsystem)
@@ -24,7 +26,12 @@ class ShootCommand(private val shooter: Shooter, private val speed: DoubleSuppli
      *
      */
     override fun execute() {
-        shooter.setVelocity(speed.asDouble, speed.asDouble)
+        shooter.setVelocity(speed.asDouble * maxRpm, speed.asDouble * maxRpm)
+        if(speed.asDouble > 0.15) {
+            shooterIsRunning()
+        } else {
+            shooterIsNotRunning()
+        }
     }
 
     /**

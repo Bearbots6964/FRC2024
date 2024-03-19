@@ -15,6 +15,8 @@ class Shooter(private val io: ShooterIO) : SubsystemBase() {
     private val inputs = ShooterIOInputsAutoLogged()
     private val feedforward = ShooterConstants.FF
 
+    var triggerIsBeingHeldDown: Boolean = false
+
     init {
         defaultCommand = run { io.set(0.0, 0.0) }
     }

@@ -2,6 +2,7 @@ package frc.robot.commands
 
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.subsystems.intake.Intake
+import org.littletonrobotics.junction.Logger
 import java.util.function.DoubleSupplier
 
 /**
@@ -25,6 +26,7 @@ class IntakeCommand(private val intake: Intake, private val speed: DoubleSupplie
      */
     override fun execute() {
         intake.set(0.25, -0.25)
+        Logger.recordOutput("Proximity", (intake.colorSensorProximity ?: return).asDouble)
     }
 
     /**
@@ -32,7 +34,7 @@ class IntakeCommand(private val intake: Intake, private val speed: DoubleSupplie
      */
     override fun isFinished(): Boolean {
         // TODO: Make this return true when this Command no longer needs to run execute()
-        return false
+        return intake.colorSensorProximity!!.asDouble > 150
     }
 
     /**
@@ -40,5 +42,6 @@ class IntakeCommand(private val intake: Intake, private val speed: DoubleSupplie
      */
     override fun end(interrupted: Boolean) {
         intake.set(0.0, 0.0)
+
     }
 }

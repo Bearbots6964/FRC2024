@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
  *
  */
 class IntakeIOInputsAutoLogged : IntakeIOInputs(), LoggableInputs, Cloneable {
+
     /**
      *
      */
