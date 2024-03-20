@@ -134,6 +134,9 @@ class ArmSubsystem private constructor() : SubsystemBase() {
         pidController.setD(0.016)
         pidController.setFF(0.001)
 
+        leftMotor.encoder.setPositionConversionFactor((1 / (5 * 4 * 3 * 4)) * 360.0)
+        leftMotor.encoder.position = encoder.position
+
 
         setpoint = encoder.position
 
@@ -168,7 +171,7 @@ class ArmSubsystem private constructor() : SubsystemBase() {
         // If the forward limit switch is pressed, we're at 243 degrees
 
         if (forwardLimitSwitch.isPressed) {
-            encoder.setZeroOffset(242.88780212402344)
+            encoder.setZeroOffset(228.65)
         }
         // If the reverse limit switch is pressed, we're at 40 degrees
         if (reverseLimitSwitch.isPressed) {

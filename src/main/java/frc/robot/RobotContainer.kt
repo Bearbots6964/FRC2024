@@ -7,12 +7,12 @@ import edu.wpi.first.math.MathUtil
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.*
 import edu.wpi.first.wpilibj.DriverStation.Alliance
-import edu.wpi.first.wpilibj.RobotBase
-import edu.wpi.first.wpilibj.XboxController
+import edu.wpi.first.wpilibj.GenericHID.RumbleType
 import edu.wpi.first.wpilibj.XboxController.Button
 import edu.wpi.first.wpilibj2.command.Command
+import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.InstantCommand
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
@@ -28,6 +28,7 @@ import frc.robot.subsystems.intake.IntakeIOSparkMax
 import frc.robot.subsystems.shooter.Shooter
 import frc.robot.subsystems.shooter.ShooterIOSparkFlex
 import frc.robot.util.Constants.OperatorConstants
+import java.io.File
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -36,7 +37,7 @@ import frc.robot.util.Constants.OperatorConstants
  */
 class RobotContainer {
     // The robot's subsystems and commands are defined here...
-    private val drivebase: SwerveSubsystem = SwerveSubsystem.instance
+     val drivebase = SwerveSubsystem(File(Filesystem.getDeployDirectory(), "c"))
     private val intake = Intake(IntakeIOSparkMax())
     private val shooter = Shooter(ShooterIOSparkFlex())
     private val armSubsystem: ArmSubsystem = ArmSubsystem.instance
@@ -51,22 +52,23 @@ class RobotContainer {
     private val reverseIntakeCommand: Command
     private val homeArmCommand: Command
     private val frostedFlakesCommand: Command
+    private val moveArmToAmpCommand: Command
+    private val overrideShootCommand: Command
+    val driveBotOrientedAngularVelocity: Command
 
     private val absoluteFieldDrive: Command
 
     private var shooterRunning: Boolean = false
-    private var hasNote: Boolean = false
+    var hasNote: Boolean = false
 
 
-    /**
-     *
-     */
-    private var driverXbox: XboxController = XboxController(0)
+
+
 
     /**
      *
      */
-    private var shooterXbox: XboxController = XboxController(1)
+
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -94,7 +96,10 @@ class RobotContainer {
         moveArmCommand = MoveArmCommand { MathUtil.applyDeadband(shooterXbox.rightY, 0.1) }
         reverseIntakeCommand = ReverseIntakeCommand(intake) { MathUtil.applyDeadband(shooterXbox.leftTriggerAxis, 0.1) }
         homeArmCommand = HomeArmCommand()
-        frostedFlakesCommand = FrostedFlakesCommand(intake)
+        frostedFlakesCommand = FrostedFlakesCommand(intake, false)
+        overrideShootCommand = FrostedFlakesCommand(intake, true)
+
+        moveArmToAmpCommand = MoveArmToAmpCommand(armSubsystem)
         val invert = invert
 
         absoluteFieldDrive = AbsoluteFieldDrive(drivebase,
@@ -136,7 +141,17 @@ class RobotContainer {
             ) * invert
         },
             { -MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
-            { driverXbox.getRawAxis(4) * invert })
+            { driverXbox.rightX * 2 * invert })
+
+
+        driveBotOrientedAngularVelocity = drivebase.botDriveCommand({
+            MathUtil.applyDeadband(
+                driverXbox.leftY,
+                OperatorConstants.LEFT_Y_DEADBAND
+            ) * invert
+        },
+            { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
+            { driverXbox.rightX * 2.0 * invert })
 
         val driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand({
             MathUtil.applyDeadband(
@@ -190,7 +205,7 @@ class RobotContainer {
         JoystickButton(driverXbox, Button.kX.value).whileTrue(aimAtLimelightCommand)
         JoystickButton(driverXbox, Button.kB.value).whileTrue(driveToPoseCommand)
         JoystickButton(driverXbox, Button.kY.value).whileTrue(rotateCommand)
-        JoystickButton(driverXbox, Button.kLeftBumper.value).whileTrue(intakeCommand)
+        JoystickButton(driverXbox, Button.kLeftBumper.value).whileTrue(driveBotOrientedAngularVelocity)
         JoystickButton(driverXbox, Button.kY.value).whileTrue(aimAndPickUpNoteCommand)
 
 
@@ -198,6 +213,9 @@ class RobotContainer {
         JoystickButton(shooterXbox, Button.kLeftBumper.value).whileTrue(Commands.either(frostedFlakesCommand, intakeCommand) { shooterRunning })
         JoystickButton(shooterXbox, Button.kRightBumper.value).whileTrue(reverseIntakeCommand)
         JoystickButton(shooterXbox, Button.kA.value).onTrue(homeArmCommand)
+        JoystickButton(shooterXbox, Button.kB.value).whileTrue(overrideShootCommand)
+        JoystickButton(shooterXbox, Button.kY.value).onTrue(moveArmToAmpCommand)
+        JoystickButton(shooterXbox, Button.kX.value).onTrue( Commands.runOnce({ CommandScheduler.getInstance().cancel(homeArmCommand, moveArmToAmpCommand, moveArmCommand) }))
 
 
 
@@ -230,4 +248,27 @@ class RobotContainer {
     fun setMotorBrake(brake: Boolean) {
         drivebase.setMotorBrake(brake)
     }
+
+    companion object {
+        var driverXbox: XboxController = XboxController(0)
+
+        /**
+         *
+         */
+        var shooterXbox: XboxController = XboxController(1)
+
+
+        val rumbleShooterControllerTwiceNotifier = Notifier {
+            shooterXbox.setRumble(RumbleType.kBothRumble, 0.5)
+            Thread.sleep(125)
+            shooterXbox.setRumble(RumbleType.kBothRumble, 0.0)
+            // wait 0.25 seconds
+            Thread.sleep(250)
+            shooterXbox.setRumble(RumbleType.kBothRumble, 0.5)
+            Thread.sleep(125)
+            shooterXbox.setRumble(RumbleType.kBothRumble, 0.0)
+
+        }
+    }
+
 }

@@ -56,6 +56,20 @@ class ShooterIOSparkFlex : ShooterIO {
         upperPID.setFF(0.0002)
         upperPID.setI(0.0)
         upperPID.setD(0.0)
+
+        for (pid in arrayOf(lowerPID, upperPID)) {
+            pid.setSmartMotionMaxVelocity(6000.0, 0)
+            pid.setSmartMotionMinOutputVelocity(0.0, 0)
+            pid.setSmartMotionMaxAccel(2500.0, 0)
+            pid.setSmartMotionAllowedClosedLoopError(0.0, 0)
+        }
+
+
+
+        upperMotor.inverted = true
+
+        lowerMotor.burnFlash()
+        upperMotor.burnFlash()
     }
 
     override fun updateInputs(inputs: ShooterIOInputs) {

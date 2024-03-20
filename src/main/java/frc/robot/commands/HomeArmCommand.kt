@@ -24,7 +24,7 @@ class HomeArmCommand() : Command() {
      * (That is, it is called repeatedly until [isFinished] returns true.)
      */
     override fun execute() {
-        hasHitLimit = armSubsystem.hasHitLowerLimit || hasHitLimit
+        hasHitLimit = armSubsystem.hasHitLowerLimit || hasHitLimit || armSubsystem.angle < 40
         armSubsystem.moveArm(-0.375)
     }
 
@@ -54,5 +54,7 @@ class HomeArmCommand() : Command() {
      *
      * @param interrupted whether the command was interrupted/canceled
      */
-    override fun end(interrupted: Boolean) {}
+    override fun end(interrupted: Boolean) {
+        armSubsystem.moveArm(0.0)
+    }
 }

@@ -5,6 +5,7 @@ package frc.robot
 
 import com.pathplanner.lib.pathfinding.Pathfinding
 import edu.wpi.first.wpilibj.DataLogManager
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import frc.robot.util.Constants
@@ -26,6 +27,9 @@ class Robot : LoggedRobot() {
     private var autonomousCommand: Command? = null
 
     private var robotContainer: RobotContainer? = null
+    init {
+        instance = this
+    }
 
     /**
      *
@@ -88,6 +92,8 @@ class Robot : LoggedRobot() {
         // and running subsystem periodic() methods.  This must be called from the robot's periodic
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run()
+
+        robotContainer?.let { SmartDashboard.putBoolean("Note", it.hasNote) }
     }
 
     /** This function is called once each time the robot enters Disabled mode.  */
@@ -106,6 +112,7 @@ class Robot : LoggedRobot() {
         if (autonomousCommand != null) {
             (autonomousCommand ?: return).schedule()
         }
+
     }
 
     /** This function is called periodically during autonomous.  */
@@ -122,6 +129,8 @@ class Robot : LoggedRobot() {
         if (autonomousCommand != null) {
             (autonomousCommand ?: return).cancel()
         }
+        robotContainer!!.setDriveMode()
+        robotContainer!!.setMotorBrake(true)
     }
 
     /** This function is called periodically during operator control.  */
@@ -137,4 +146,9 @@ class Robot : LoggedRobot() {
 
     /** This function is called periodically during test mode.  */
     override fun testPeriodic() {}
+
+    companion object {
+        lateinit var instance: Robot
+            private set
+    }
 }

@@ -39,7 +39,7 @@ private constructor() : SubsystemBase() {
         var targetingAngularVelocity = LimelightHelpers.getTX("limelight-front") * kP
 
         // convert to radians per second for our drive method
-        targetingAngularVelocity *= SwerveSubsystem.instance.swerveDrive.maximumAngularVelocity
+        targetingAngularVelocity *= 1
 
         //invert since tx is positive when the target is to the right of the crosshair
         targetingAngularVelocity *= -1.0
@@ -63,7 +63,7 @@ private constructor() : SubsystemBase() {
         var targetingAngularVelocity = LimelightHelpers.getTX("limelight-back") * kP
 
         // convert to radians per second for our drive method
-        targetingAngularVelocity *= SwerveSubsystem.instance.swerveDrive.maximumAngularVelocity
+        targetingAngularVelocity *= 1
 
         //invert since tx is positive when the target is to the right of the crosshair
         targetingAngularVelocity *= 1.0
@@ -79,7 +79,7 @@ private constructor() : SubsystemBase() {
     fun limelightRangeProportional(): Double {
         val kP = .1
         var targetingForwardSpeed = (LimelightHelpers.getTY("limelight-front") + 28.1) * kP
-        targetingForwardSpeed *= SwerveSubsystem.instance.swerveDrive.maximumVelocity
+        targetingForwardSpeed *= 1
         targetingForwardSpeed *= -1.0
         return targetingForwardSpeed
     }

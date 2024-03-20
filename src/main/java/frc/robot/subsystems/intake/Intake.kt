@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog
 import edu.wpi.first.wpilibj2.command.*
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
+import frc.robot.Robot
+import frc.robot.RobotContainer
 import frc.robot.subsystems.SwerveSubsystem
 import frc.robot.util.Constants.IntakeConstants
 import org.littletonrobotics.junction.*
@@ -26,26 +28,7 @@ class Intake(val io: IntakeIO) : SubsystemBase() {
     }
 
     /** Returns a command that intakes a note.  */
-    fun intakeCommandSpeedMatch(): Command {
-        return runEnd({
-            // get swerve velocity in x
-            val speed = Units.metersToInches(
-                abs(
-                    SwerveSubsystem.Companion.instance.robotVelocity.vxMetersPerSecond
-                )
-            ) // "grr I HATE metric!" - every American ever
-            // if the robot is moving, we'll want to match the speed of the robot,
-            // so we first calculate the number of rotations per second we need to intake
-            // luckily we already have the circumference from the Constants file
-            val intakeRps = speed / IntakeConstants.CIRCUMFERENCE
-            // ...convert to RPM...
-            val intakeRpm = intakeRps * 60
-            // ...and set the intake and cerealizer to that speed
-            io.setVelocity(-intakeRpm, -intakeRpm)
-        }, {
-            io.set(0.0, 0.0)
-        })
-    }
+
 
     /** Returns a command that intakes a note. Now with speed-agnostic output.  */
     fun intakeCommand(): Command {

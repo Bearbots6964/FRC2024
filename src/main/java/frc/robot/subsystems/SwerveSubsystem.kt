@@ -17,8 +17,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics
 import edu.wpi.first.math.trajectory.Trajectory
 import edu.wpi.first.math.util.Units
-import edu.wpi.first.wpilibj.*
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.DriverStation.Alliance
+import edu.wpi.first.wpilibj.Filesystem
+import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
@@ -28,13 +30,16 @@ import org.littletonrobotics.junction.Logger
 import swervelib.SwerveController
 import swervelib.SwerveDrive
 import swervelib.SwerveDriveTest
+import swervelib.math.SwerveMath
 import swervelib.parser.SwerveControllerConfiguration
 import swervelib.parser.SwerveDriveConfiguration
 import swervelib.parser.SwerveParser
 import swervelib.telemetry.SwerveDriveTelemetry
+import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity
 import java.io.File
 import java.util.function.DoubleSupplier
 import kotlin.math.pow
+
 
 /**
  *
@@ -56,7 +61,7 @@ class SwerveSubsystem : SubsystemBase {
     /**
      * Maximum speed of the robot in meters per second, used to limit acceleration.
      */
-    private var maximumSpeed: Double = Units.feetToMeters(12.5)
+    private var maximumSpeed: Double = Units.feetToMeters(120.5)
 
     /**
      * Initialize [SwerveDrive] with the directory provided.
@@ -64,8 +69,27 @@ class SwerveSubsystem : SubsystemBase {
      * @param directory Directory of swerve drive config files.
      */
     constructor(directory: File?) {
+
+
+        // Angle conversion factor is 360 / (GEAR RATIO * ENCODER RESOLUTION)
+        //  In this case the gear ratio is 12.8 motor revolutions per wheel rotation.
+        //  The encoder resolution per motor revolution is 1 per motor revolution.
+        val angleConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(12.8)
+
+
+        // Motor conversion factor is (PI * WHEEL DIAMETER IN METERS) / (GEAR RATIO * ENCODER RESOLUTION).
+        //  In this case the wheel diameter is 4 inches, which must be converted to meters to get meters/second.
+        //  The gear ratio is 6.75 motor revolutions per wheel rotation.
+        //  The encoder resolution per motor revolution is 1 per motor revolution.
+        val driveConversionFactor = SwerveMath.calculateMetersPerRotation(Units.inchesToMeters(4.0), 6.75)
+        println("\"conversionFactor\": {")
+        println("\t\"angle\": $angleConversionFactor,")
+        println("\t\"drive\": $driveConversionFactor")
+        println("}")
+
+
         // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being created.
-        SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.HIGH
+        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH
         try {
             swerveDrive = SwerveParser(directory).createSwerveDrive(maximumSpeed)
             // Alternative method if you don't want to supply the conversion factor via JSON files.
@@ -77,7 +101,9 @@ class SwerveSubsystem : SubsystemBase {
         swerveDrive.setCosineCompensator(!SwerveDriveTelemetry.isSimulation) // Disables cosine compensation for simulations since it causes discrepancies not seen in real life.
         setupPathPlanner()
 
-        val navx = swerveDrive.swerveDriveConfiguration.imu.imu as AHRS
+
+        swerveController.setMaximumAngularVelocity(Math.PI)
+
     }
 
     /**
@@ -93,7 +119,7 @@ class SwerveSubsystem : SubsystemBase {
     /**
      * Setup AutoBuilder for PathPlanner.
      */
-    private fun setupPathPlanner() {
+    fun setupPathPlanner() {
         AutoBuilder.configureHolonomic(
             { this.pose },  // Robot pose supplier
             { initialHolonomicPose: Pose2d? -> this.resetOdometry(initialHolonomicPose) },  // Method to reset odometry (will be called if your auto has a starting pose)
@@ -265,15 +291,14 @@ class SwerveSubsystem : SubsystemBase {
                 Translation2d(
                     translationX.asDouble.pow(3.0) * swerveDrive.maximumVelocity,
                     translationY.asDouble.pow(3.0) * swerveDrive.maximumVelocity
-                ), angularRotationX.asDouble * swerveDrive.maximumAngularVelocity, true, false
+                ),
+                angularRotationX.asDouble.pow(3.0) * swerveDrive.maximumAngularVelocity,
+                true,
+                false
             )
         }
     }
-
-    /**
-     *
-     */
-    fun driveCommandNonRel(
+    fun botDriveCommand(
         translationX: DoubleSupplier,
         translationY: DoubleSupplier,
         angularRotationX: DoubleSupplier,
@@ -284,7 +309,10 @@ class SwerveSubsystem : SubsystemBase {
                 Translation2d(
                     translationX.asDouble.pow(3.0) * swerveDrive.maximumVelocity,
                     translationY.asDouble.pow(3.0) * swerveDrive.maximumVelocity
-                ), angularRotationX.asDouble * swerveDrive.maximumAngularVelocity, false, false
+                ),
+                angularRotationX.asDouble.pow(3.0) * swerveDrive.maximumAngularVelocity,
+                false,
+                false
             )
         }
     }
@@ -332,7 +360,7 @@ class SwerveSubsystem : SubsystemBase {
      */
     override fun periodic() {
         if (LimelightHelpers.getTV("limelight-back")) swerveDrive.addVisionMeasurement(
-            LimelightHelpers.getBotPose2d_wpiRed(
+            LimelightHelpers.getBotPose2d(
                 "limelight-back"
             ),
             Timer.getFPGATimestamp() - (LimelightHelpers.getLatency_Pipeline("limelight-back") + LimelightHelpers.getLatency_Capture(
@@ -341,12 +369,14 @@ class SwerveSubsystem : SubsystemBase {
         )
         Logger.recordOutput(
             "Limelight Pose",
-            LimelightHelpers.getBotPose2d_wpiRed(
+            LimelightHelpers.getBotPose2d(
                 "limelight-back"
             ),
         )
         Logger.recordOutput("Pose", pose)
         // PathPlannerLogging.logCurrentPose(getPose());
+
+        swerveDrive.updateOdometry()
 
     }
 
@@ -374,7 +404,7 @@ class SwerveSubsystem : SubsystemBase {
      *
      * @param initialHolonomicPose The pose to set the odometry to
      */
-    private fun resetOdometry(initialHolonomicPose: Pose2d?) {
+    fun resetOdometry(initialHolonomicPose: Pose2d?) {
         swerveDrive.resetOdometry(initialHolonomicPose)
     }
 
@@ -394,7 +424,7 @@ class SwerveSubsystem : SubsystemBase {
      *
      * @param chassisSpeeds Chassis Speeds to set.
      */
-    private fun setChassisSpeeds(chassisSpeeds: ChassisSpeeds?) {
+    fun setChassisSpeeds(chassisSpeeds: ChassisSpeeds?) {
         swerveDrive.setChassisSpeeds(chassisSpeeds)
     }
 
@@ -537,10 +567,16 @@ class SwerveSubsystem : SubsystemBase {
         get() = swerveDrive.pitch
 
 
-    companion object {
         /**
-         *
+     * Add a fake vision reading for testing purposes.
          */
-        val instance: SwerveSubsystem = SwerveSubsystem(File(Filesystem.getDeployDirectory(), "maxswerve"))
+    fun addFakeVisionReading() {
+        swerveDrive.addVisionMeasurement(Pose2d(3.0, 3.0, Rotation2d.fromDegrees(65.0)), Timer.getFPGATimestamp())
+    }
+
+    companion object {
+        fun maximumVelocity(): Double {
+            return Units.feetToMeters(12.5)
+        }
     }
 }
