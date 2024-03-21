@@ -6,9 +6,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": null
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Start near Middle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeCommand"
+                }
+              }
+            ]
           }
         }
       ]
