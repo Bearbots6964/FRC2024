@@ -1,22 +1,18 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.shooter.Shooter;
-
-import java.util.function.DoubleSupplier;
+import frc.robot.subsystems.SwerveSubsystem;
 
 
-public class ShootCommand extends Command {
-  private final Shooter shooter;
-  private final DoubleSupplier speed;
+public class RotateCommand extends Command {
+  private final SwerveSubsystem drivebase;
 
-
-  public ShootCommand(Shooter shooter, DoubleSupplier speed) {
-    this.shooter = shooter;
-    this.speed = speed;
+  public RotateCommand(SwerveSubsystem swerveSubsystem) {
+    this.drivebase = swerveSubsystem;
     // each subsystem used by the command must be passed into the
     // addRequirements() method (which takes a vararg of Subsystem)
-    addRequirements(this.shooter);
+    addRequirements(this.drivebase);
   }
 
   @Override
@@ -26,7 +22,10 @@ public class ShootCommand extends Command {
 
   @Override
   public void execute() {
-    shooter.setVelocity(speed.getAsDouble(), speed.getAsDouble());
+    drivebase.drive( drivebase.getSwerveController().getTargetSpeeds(0, 0,
+        1 * Math.PI,
+        drivebase.getHeading().getRadians(),
+        drivebase.getSwerveDrive().getMaximumVelocity()));
   }
 
   @Override
@@ -37,6 +36,6 @@ public class ShootCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    shooter.set(0.0, 0.0);
+
   }
 }

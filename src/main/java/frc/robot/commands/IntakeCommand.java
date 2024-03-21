@@ -1,22 +1,27 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.util.Constants;
 
 import java.util.function.DoubleSupplier;
+import java.util.prefs.PreferencesFactory;
 
 
-public class ShootCommand extends Command {
-  private final Shooter shooter;
+public class IntakeCommand extends Command {
+  private final Intake intake;
   private final DoubleSupplier speed;
 
 
-  public ShootCommand(Shooter shooter, DoubleSupplier speed) {
-    this.shooter = shooter;
+  public IntakeCommand(Intake intake, DoubleSupplier speed) {
+    this.intake = intake;
     this.speed = speed;
     // each subsystem used by the command must be passed into the
     // addRequirements() method (which takes a vararg of Subsystem)
-    addRequirements(this.shooter);
+    addRequirements(this.intake);
+
   }
 
   @Override
@@ -26,7 +31,9 @@ public class ShootCommand extends Command {
 
   @Override
   public void execute() {
-    shooter.setVelocity(speed.getAsDouble(), speed.getAsDouble());
+
+    intake.set(0.5, 0.25);
+
   }
 
   @Override
@@ -37,6 +44,6 @@ public class ShootCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    shooter.set(0.0, 0.0);
+    intake.set(0.0, 0.0);
   }
 }
