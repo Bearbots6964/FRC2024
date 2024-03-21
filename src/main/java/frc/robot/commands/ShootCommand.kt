@@ -7,7 +7,12 @@ import java.util.function.DoubleSupplier
 /**
  *
  */
-class ShootCommand(private val shooter: Shooter, private val speed: DoubleSupplier, private val shooterIsRunning: () -> Unit, private val shooterIsNotRunning: () -> Unit) : Command() {
+class ShootCommand(
+    private val shooter: Shooter,
+    private val speed: DoubleSupplier,
+    private val shooterIsRunning: () -> Unit,
+    private val shooterIsNotRunning: () -> Unit,
+) : Command() {
 
     val maxRpm = 3500.0
     init {

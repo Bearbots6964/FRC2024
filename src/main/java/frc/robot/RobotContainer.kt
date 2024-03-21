@@ -223,38 +223,18 @@ class RobotContainer {
         armSubsystem.defaultCommand = moveArmCommand
     }
 
-    /**
-     *
-     */
-    val autonomousCommand: Command
-        /**
-         * Use this to pass the autonomous command to the main [Robot] class.
-         *
-         * @return the command to run in autonomous
-         */
-        get() =// An example command will be run in autonomous
-            drivebase.getAutonomousCommand("New Auto")
+    val autonomousCommand: Command = AutonomousCommands(drivebase, shooter, intake)
 
-    /**
-     *
-     */
     fun setDriveMode() {
         //drivebase.setDefaultCommand();
     }
 
-    /**
-     *
-     */
     fun setMotorBrake(brake: Boolean) {
         drivebase.setMotorBrake(brake)
     }
 
     companion object {
         var driverXbox: XboxController = XboxController(0)
-
-        /**
-         *
-         */
         var shooterXbox: XboxController = XboxController(1)
 
 

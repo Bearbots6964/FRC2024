@@ -165,7 +165,7 @@ class SwerveSubsystem : SubsystemBase {
      * @param pathName PathPlanner path name.
      * @return [AutoBuilder.followPath] path command.
      */
-    fun getAutonomousCommand(pathName: String?): Command {
+    fun getAutonomousCommand(pathName: String): Command {
         // Create a path following command using AutoBuilder. This will also trigger event markers.
         return PathPlannerAuto(pathName)
     }
