@@ -19,7 +19,7 @@ public class AutonomousCommands(
     init {
         addCommands(
                 swerveSubsystem.getAutonomousCommand("start-to-speaker"),
-                InstantCommand({armSubsystem.moveArmToAngle(60.0)}, armSubsystem),
+                InstantCommand({armSubsystem.moveArmToAngle(50.0)}, armSubsystem),
                 ShootCommand(shooter, {Constants.ShooterConstants.MAX_VELOCITY}, {}, {}),
                 swerveSubsystem.getAutonomousCommand("speaker-to-note-1"),
                 // value doesn't matter, `speed` is unused
