@@ -1,17 +1,13 @@
 package frc.robot.commands
 
 import edu.wpi.first.wpilibj2.command.Command
-import frc.robot.subsystems.ArmSubsystem
 
-class MoveArmToAmpCommand(armSubsystem: ArmSubsystem) : Command() {
-    private val armSubsystem: ArmSubsystem
-    private var numTimesAtPos = 0
-    private var angle = 195.0
+class EmoteButton : Command() {
+
 
     init {
         // each subsystem used by the command must be passed into the addRequirements() method
-        this.armSubsystem = armSubsystem
-        addRequirements(this.armSubsystem)
+        addRequirements()
     }
 
     /**
@@ -23,15 +19,7 @@ class MoveArmToAmpCommand(armSubsystem: ArmSubsystem) : Command() {
      * The main body of a command.  Called repeatedly while the command is scheduled.
      * (That is, it is called repeatedly until [isFinished] returns true.)
      */
-    override fun execute() {
-        armSubsystem.moveArmToAngle(angle)
-
-        if (armSubsystem.angle < angle + 0.5 && armSubsystem.angle > angle - 0.5) {
-            numTimesAtPos++
-        } else {
-            numTimesAtPos = 0
-        }
-    }
+    override fun execute() {}
 
     /**
      * Returns whether this command has finished. Once a command finishes -- indicated by
@@ -47,7 +35,7 @@ class MoveArmToAmpCommand(armSubsystem: ArmSubsystem) : Command() {
      */
     override fun isFinished(): Boolean {
         // TODO: Make this return true when this Command no longer needs to run execute()
-        return numTimesAtPos > 10
+        return false
     }
 
     /**
@@ -58,7 +46,5 @@ class MoveArmToAmpCommand(armSubsystem: ArmSubsystem) : Command() {
      *
      * @param interrupted whether the command was interrupted/canceled
      */
-    override fun end(interrupted: Boolean) {
-        armSubsystem.moveArm(0.0)
-    }
+    override fun end(interrupted: Boolean) {}
 }

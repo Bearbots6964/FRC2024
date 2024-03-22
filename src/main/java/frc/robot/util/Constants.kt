@@ -14,7 +14,7 @@ object Constants {
     /**
      *
      */
-    const val ROBOT_MASS: Double = 39.97 // 32lbs * kg per pound
+    const val ROBOT_MASS: Double = 57.97 // 32lbs * kg per pound
     /**
      *
      */
