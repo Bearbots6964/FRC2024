@@ -1,17 +1,14 @@
 package frc.robot.commands
 
-import edu.wpi.first.wpilibj.GenericHID
-import edu.wpi.first.wpilibj.Notifier
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.RobotContainer
 import frc.robot.subsystems.intake.Intake
 import org.littletonrobotics.junction.Logger
-import java.util.function.DoubleSupplier
 
 /**
  *
  */
-class IntakeCommand(private val intake: Intake, private val speed: DoubleSupplier) : Command() {
+class IntakeCommand(private val intake: Intake) : Command() {
     init {
         // each subsystem used by the command must be passed into the
         // addRequirements() method (which takes a vararg of Subsystem)

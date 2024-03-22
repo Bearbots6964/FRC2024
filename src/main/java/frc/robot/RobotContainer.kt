@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.wpilibj.*
-import edu.wpi.first.wpilibj.DriverStation.Alliance
 import edu.wpi.first.wpilibj.GenericHID.RumbleType
 import edu.wpi.first.wpilibj.XboxController.Button
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
@@ -77,7 +76,7 @@ class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     init {
-        intakeCommand = IntakeCommand(intake) { MathUtil.applyDeadband(shooterXbox.leftTriggerAxis, 0.1) }
+        intakeCommand = IntakeCommand(intake)
         shootCommand = ShootCommand(shooter, {MathUtil.applyDeadband(shooterXbox.rightTriggerAxis, 0.1)},
             { shooterRunning = true }, { shooterRunning = false })
         aimAtLimelightCommand = AimAtLimelightCommand(drivebase, VisionSubsystem.instance)
@@ -92,7 +91,7 @@ class RobotContainer {
                 )
             ).andThen(drivebase.driveToPose(Pose2d(Translation2d(2.720, 2.579), Rotation2d.fromDegrees(180.0))))
                 .andThen(AimAtLimelightCommand(drivebase, VisionSubsystem.instance))
-                .andThen(IntakeCommand(intake, { 1.0 }))
+                .andThen(IntakeCommand(intake))
         )
         aimAndPickUpNoteCommand = AimAndPickUpNoteCommand(drivebase, VisionSubsystem.instance, intake)
         armSysIdCommand = ArmSubsystem.generateSysIdCommand(armSubsystem.sysId, 2.0, 3.5, 1.5)
@@ -204,6 +203,7 @@ class RobotContainer {
         JoystickButton(driverXbox, Button.kLeftBumper.value).whileTrue(driveBotOrientedAngularVelocity)
         JoystickButton(driverXbox, Button.kY.value).whileTrue(aimAndPickUpNoteCommand)
         JoystickButton(driverXbox, Button.kStart.value).onTrue(Commands.runOnce({ invert *= -1; SmartDashboard.putNumber("Invert", invert.toDouble()) }))
+        JoystickButton(driverXbox, Button.kBack.value).onTrue(Commands.runOnce({drivebase.enableApriltags = !drivebase.enableApriltags}))
 
 
         // for the intake, if the shooter is running, execute the frosted flakes command, and otherwise, execute the intake command
@@ -220,7 +220,7 @@ class RobotContainer {
         armSubsystem.defaultCommand = moveArmCommand
     }
 
-    val autonomousCommand: Command = AutonomousCommands(drivebase, shooter, intake)
+    val autonomousCommand: Command = AutonomousCommands(drivebase, armSubsystem, shooter, intake)
 
     fun setDriveMode() {
         //drivebase.setDefaultCommand();

@@ -46,6 +46,7 @@ import kotlin.math.pow
  */
 class SwerveSubsystem : SubsystemBase {
     private var lockRotation = false
+    var enableApriltags = true
 
     /**
      * Get the swerve drive object.
@@ -359,7 +360,7 @@ class SwerveSubsystem : SubsystemBase {
      *
      */
     override fun periodic() {
-        if (LimelightHelpers.getTV("limelight-back")) swerveDrive.addVisionMeasurement(
+        if (LimelightHelpers.getTV("limelight-back") && enableApriltags) swerveDrive.addVisionMeasurement(
             LimelightHelpers.getBotPose2d(
                 "limelight-back"
             ),
