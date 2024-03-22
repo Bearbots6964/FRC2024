@@ -2,11 +2,24 @@ plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2024.3.2"
     id "com.peterabeles.gversion" version "1.10.2"
+
+    // One of the dumb things about IDEA is that it doesn't download sources and javadoc by default
+    // and you can't do it from the UI like you can with Maven.
+    // IDEA (and Eclipse, and Replit) all really seem geared towards Maven, and Gradle is a second-class citizen.
+    // I mean, it's not like you can't use Gradle with IDEA, but it's just not as smooth as Maven.
+    // But I've got bigger problems than some Maven-vs-Gradle thing.
+    id "idea"
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 }
 project.compileJava.dependsOn(createVersionFile)
 gversion {
@@ -28,6 +41,7 @@ repositories {
         }
     }
     mavenLocal()
+    mavenCentral()
 }
 
 configurations.all {
@@ -102,6 +116,7 @@ dependencies {
 
     def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
     annotationProcessor "org.littletonrobotics.akit.junction:junction-autolog:$akitJson.version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 test {
@@ -131,4 +146,7 @@ wpi.java.configureTestTasks(test)
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs.add '-XDstringConcat=inline'
+}
+kotlin {
+    jvmToolchain(17)
 }
