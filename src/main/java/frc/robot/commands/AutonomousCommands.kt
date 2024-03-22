@@ -23,7 +23,7 @@ public class AutonomousCommands(
                 ShootCommand(shooter, {Constants.ShooterConstants.MAX_VELOCITY}, {}, {}),
                 swerveSubsystem.getAutonomousCommand("speaker-to-note-2"),
                 // value doesn't matter, `speed` is unused
-                IntakeCommand(intake) { 10.0 },
+                IntakeCommand(intake),
         )
     }
 }
