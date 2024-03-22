@@ -3,31 +3,35 @@ package frc.robot.commands
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.subsystems.ArmSubsystem
 
-class HomeArmCommand() : Command() {
-    private val armSubsystem: ArmSubsystem = ArmSubsystem.instance
-    private var hasHitLimit = false
-
+class HomeArmCommand(armSubsystem: ArmSubsystem) : Command() {
+    private val armSubsystem: ArmSubsystem
+    private var numTimesAtPos = 0
+    private var angle = 35.0
 
     init {
         // each subsystem used by the command must be passed into the addRequirements() method
+        this.armSubsystem = armSubsystem
         addRequirements(this.armSubsystem)
     }
 
     /**
      * The initial subroutine of a command.  Called once when the command is initially scheduled.
      */
-    override fun initialize() {
-    }
+    override fun initialize() {}
 
     /**
      * The main body of a command.  Called repeatedly while the command is scheduled.
      * (That is, it is called repeatedly until [isFinished] returns true.)
      */
     override fun execute() {
-        hasHitLimit = armSubsystem.hasHitLowerLimit || hasHitLimit || armSubsystem.angle < 40
-        armSubsystem.moveArm(-0.375)
-    }
+        armSubsystem.moveArmToAngle(angle)
 
+        if (armSubsystem.angle < angle + 0.5 && armSubsystem.angle > angle - 0.5) {
+            numTimesAtPos++
+        } else {
+            numTimesAtPos = 0
+        }
+    }
 
     /**
      * Returns whether this command has finished. Once a command finishes -- indicated by
@@ -43,7 +47,7 @@ class HomeArmCommand() : Command() {
      */
     override fun isFinished(): Boolean {
         // TODO: Make this return true when this Command no longer needs to run execute()
-        return hasHitLimit
+        return numTimesAtPos > 10
     }
 
     /**

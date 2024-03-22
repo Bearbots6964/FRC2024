@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.*
 import edu.wpi.first.wpilibj.DriverStation.Alliance
 import edu.wpi.first.wpilibj.GenericHID.RumbleType
 import edu.wpi.first.wpilibj.XboxController.Button
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
@@ -37,7 +38,7 @@ import java.io.File
  */
 class RobotContainer {
     // The robot's subsystems and commands are defined here...
-     val drivebase = SwerveSubsystem(File(Filesystem.getDeployDirectory(), "c"))
+     val drivebase = SwerveSubsystem(File(Filesystem.getDeployDirectory(), "e"))
     private val intake = Intake(IntakeIOSparkMax())
     private val shooter = Shooter(ShooterIOSparkFlex())
     private val armSubsystem: ArmSubsystem = ArmSubsystem.instance
@@ -55,6 +56,7 @@ class RobotContainer {
     private val moveArmToAmpCommand: Command
     private val overrideShootCommand: Command
     val driveBotOrientedAngularVelocity: Command
+    private val autoShootCommand: Command
 
     private val absoluteFieldDrive: Command
 
@@ -69,6 +71,7 @@ class RobotContainer {
      *
      */
 
+    private var invert: Int = 1
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -95,12 +98,14 @@ class RobotContainer {
         armSysIdCommand = ArmSubsystem.generateSysIdCommand(armSubsystem.sysId, 2.0, 3.5, 1.5)
         moveArmCommand = MoveArmCommand { MathUtil.applyDeadband(shooterXbox.rightY, 0.1) }
         reverseIntakeCommand = ReverseIntakeCommand(intake, shooter) { MathUtil.applyDeadband(shooterXbox.leftTriggerAxis, 0.1) }
-        homeArmCommand = HomeArmCommand()
+        homeArmCommand = HomeArmCommand(armSubsystem)
         frostedFlakesCommand = FrostedFlakesCommand(intake, false)
         overrideShootCommand = FrostedFlakesCommand(intake, true)
+        autoShootCommand = ShootCommand(shooter, { return@ShootCommand 0.1 }, { shooterRunning = true }, { shooterRunning = false })
+
+        invert = 1
 
         moveArmToAmpCommand = MoveArmToAmpCommand(armSubsystem)
-        val invert = invert
 
         absoluteFieldDrive = AbsoluteFieldDrive(drivebase,
             { MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) * invert },
@@ -120,6 +125,8 @@ class RobotContainer {
             { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
             { driverXbox.rightX * invert },
             { driverXbox.rightY * invert })
+
+
         val closedAbsoluteDriveAdv = AbsoluteDriveAdv(drivebase,
             { MathUtil.applyDeadband(driverXbox.leftY * invert, OperatorConstants.LEFT_Y_DEADBAND) },
             { MathUtil.applyDeadband(driverXbox.leftX * invert, OperatorConstants.LEFT_X_DEADBAND) },
@@ -140,8 +147,8 @@ class RobotContainer {
                 OperatorConstants.LEFT_Y_DEADBAND
             ) * invert
         },
-            { -MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
-            { driverXbox.rightX * 2 * invert })
+            { -MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND)  * invert},
+            { driverXbox.rightX * 2  })
 
 
         driveBotOrientedAngularVelocity = drivebase.botDriveCommand({
@@ -172,24 +179,13 @@ class RobotContainer {
                 { driverXbox.rightY })
 
         drivebase.defaultCommand =
-            if (!RobotBase.isSimulation()) driveFieldOrientedAnglularVelocity else driveFieldOrientedDirectAngleSim
+            driveFieldOrientedAnglularVelocity
 
         // Configure the trigger bindings
         configureBindings()
     }
 
-    private val invert: Int
-        get() {
-            val alliance = DriverStation.getAlliance()
-            val invert = if (alliance.isPresent && alliance.get() == Alliance.Red) {
-                -1
-            } else {
-                1
-            }
 
-
-            return invert
-        }
 
     /**
      * Use this method to define your trigger->command mappings. Triggers can be created via the
@@ -207,9 +203,10 @@ class RobotContainer {
         JoystickButton(driverXbox, Button.kY.value).whileTrue(rotateCommand)
         JoystickButton(driverXbox, Button.kLeftBumper.value).whileTrue(driveBotOrientedAngularVelocity)
         JoystickButton(driverXbox, Button.kY.value).whileTrue(aimAndPickUpNoteCommand)
+        JoystickButton(driverXbox, Button.kStart.value).onTrue(Commands.runOnce({ invert *= -1; SmartDashboard.putNumber("Invert", invert.toDouble()) }))
 
 
-        // for the intake command, if the shooter is running, execute the frosted flakes command, and otherwise, execute the intake command
+        // for the intake, if the shooter is running, execute the frosted flakes command, and otherwise, execute the intake command
         JoystickButton(shooterXbox, Button.kLeftBumper.value).whileTrue(Commands.either(frostedFlakesCommand, intakeCommand) { shooterRunning })
         JoystickButton(shooterXbox, Button.kRightBumper.value).whileTrue(reverseIntakeCommand)
         JoystickButton(shooterXbox, Button.kA.value).onTrue(homeArmCommand)

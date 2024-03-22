@@ -38,7 +38,7 @@ class MoveArmCommand(
      */
     override fun execute() {
         //armSubsystem.moveArmButWithVelocity(speed.getAsDouble() * 144);
-        angle += speed.asDouble
+        angle -= speed.asDouble
         armSubsystem.moveArmToAngle(angle)
     }
 

@@ -170,12 +170,12 @@ class ArmSubsystem private constructor() : SubsystemBase() {
         // 0 degrees is set to (r, 270) in polar coordinates, because that way it will never wrap around
         // If the forward limit switch is pressed, we're at 243 degrees
 
-        if (forwardLimitSwitch.isPressed) {
-            encoder.setZeroOffset(228.65)
-        }
+//        if (forwardLimitSwitch.isPressed) {
+//            encoder.setZeroOffset(225.65)
+//        }
         // If the reverse limit switch is pressed, we're at 40 degrees
         if (reverseLimitSwitch.isPressed) {
-            encoder.setZeroOffset(39.87791442871094)
+            encoder.setZeroOffset(35.2)
         }
 
         //pidController.setReference(SmartDashboard.getNumber("Arm Setpoint", setpoint), CANSparkMax.ControlType.kPosition);
