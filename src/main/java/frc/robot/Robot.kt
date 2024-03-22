@@ -106,12 +106,12 @@ class Robot : LoggedRobot() {
 
     /** This autonomous runs the autonomous command selected by your [RobotContainer] class.  */
     override fun autonomousInit() {
-//        autonomousCommand = robotContainer?.autonomousCommand
-//
-//        // schedule the autonomous command (example)
-//        if (autonomousCommand != null) {
-//            (autonomousCommand ?: return).schedule()
-//        }
+        autonomousCommand = robotContainer?.autonomousCommand
+
+        // schedule the autonomous command (example)
+        if (autonomousCommand != null) {
+            (autonomousCommand ?: return).schedule()
+        }
 
     }
 
