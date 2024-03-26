@@ -12,7 +12,7 @@
     "id": 0
   },
   "inverted": {
-    "drive": true,
+    "drive": false,
     "angle": false
   },
   "absoluteEncoderInverted": true,
