@@ -1,8 +1,35 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "REV Color Sensor V3[1,82]": {
+        "header": {
+          "open": true
+        }
+      },
+      "window": {
+        "visible": false
+      }
+    },
+    "RoboRIO": {
+      "3.3V Rail": {
+        "open": true
+      },
+      "5V Rail": {
+        "open": true
+      },
+      "6V Rail": {
+        "open": true
+      },
+      "RoboRIO Input": {
+        "open": true
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/auto choices": "String Chooser",
       "/SmartDashboard/navX-Sensor[4]": "Gyro"
     },
     "windows": {
@@ -28,14 +55,28 @@
           },
           "double[]##v_/SmartDashboard/Field/XModules": {
             "open": true
-          },
-          "open": true
+          }
+        },
+        "auto choices": {
+          "open": true,
+          "string[]##v_/SmartDashboard/auto choices/options": {
+            "open": true
+          }
         },
         "open": true
       }
     }
   },
   "NetworkTables Info": {
+    "Clients": {
+      "open": true
+    },
+    "Server": {
+      "open": true
+    },
     "visible": true
+  },
+  "NetworkTables View": {
+    "visible": false
   }
 }
