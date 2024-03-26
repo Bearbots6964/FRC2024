@@ -1,0 +1,57 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.7227094637306205,
+      "y": 4.327394422467836
+    },
+    "rotation": 120.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "shootCommand"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.5
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "frostedFlakesCommand"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "New Path"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
