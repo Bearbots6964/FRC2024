@@ -1,5 +1,5 @@
-//LimelightHelpers v1.2.1 (March 1, 2023)
-package frc.robot.util
+//LimelightHelpers v1.4.0 (March 21, 2024)
+package frc.robot
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -34,7 +34,7 @@ object LimelightHelpers {
 
     private fun toPose3D(inData: DoubleArray): Pose3d {
         if (inData.size < 6) {
-            System.err.println("Bad LL 3D Pose Data!")
+            //System.err.println("Bad LL 3D Pose Data!");
             return Pose3d()
         }
         return Pose3d(
@@ -50,12 +50,90 @@ object LimelightHelpers {
 
     private fun toPose2D(inData: DoubleArray): Pose2d {
         if (inData.size < 6) {
-            System.err.println("Bad LL 2D Pose Data!")
+            //System.err.println("Bad LL 2D Pose Data!");
             return Pose2d()
         }
         val tran2d = Translation2d(inData[0], inData[1])
         val r2d = Rotation2d(Units.degreesToRadians(inData[5]))
         return Pose2d(tran2d, r2d)
+    }
+
+    private fun extractBotPoseEntry(inData: DoubleArray, position: Int): Double {
+        if (inData.size < position + 1) {
+            return 0.0
+        }
+        return inData[position]
+    }
+
+    private fun getBotPoseEstimate(limelightName: String, entryName: String): PoseEstimate {
+        val poseEntry = getLimelightNTTableEntry(limelightName, entryName)
+        val poseArray = poseEntry.getDoubleArray(DoubleArray(0))
+        val pose = toPose2D(poseArray)
+        val latency = extractBotPoseEntry(poseArray, 6)
+        val tagCount = extractBotPoseEntry(poseArray, 7).toInt()
+        val tagSpan = extractBotPoseEntry(poseArray, 8)
+        val tagDist = extractBotPoseEntry(poseArray, 9)
+        val tagArea = extractBotPoseEntry(poseArray, 10)
+        //getlastchange() in microseconds, ll latency in milliseconds
+        val timestamp = (poseEntry.lastChange / 1000000.0) - (latency / 1000.0)
+
+
+        val rawFiducials = arrayOfNulls<RawFiducial>(tagCount)
+        val valsPerFiducial = 7
+        val expectedTotalVals = 11 + valsPerFiducial * tagCount
+
+        if (poseArray.size != expectedTotalVals) {
+            // Don't populate fiducials
+        } else {
+            for (i in 0 until tagCount) {
+                val baseIndex = 11 + (i * valsPerFiducial)
+                val id = poseArray[baseIndex].toInt()
+                val txnc = poseArray[baseIndex + 1]
+                val tync = poseArray[baseIndex + 2]
+                val ta = poseArray[baseIndex + 3]
+                val distToCamera = poseArray[baseIndex + 4]
+                val distToRobot = poseArray[baseIndex + 5]
+                val ambiguity = poseArray[baseIndex + 6]
+                rawFiducials[i] = RawFiducial(id, txnc, tync, ta, distToCamera, distToRobot, ambiguity)
+            }
+        }
+
+        return PoseEstimate(pose, timestamp, latency, tagCount, tagSpan, tagDist, tagArea, rawFiducials)
+    }
+
+    private fun printPoseEstimate(pose: PoseEstimate?) {
+        if (pose == null) {
+            println("No PoseEstimate available.")
+            return
+        }
+
+        System.out.printf("Pose Estimate Information:%n")
+        System.out.printf("Timestamp (Seconds): %.3f%n", pose.timestampSeconds)
+        System.out.printf("Latency: %.3f ms%n", pose.latency)
+        System.out.printf("Tag Count: %d%n", pose.tagCount)
+        System.out.printf("Tag Span: %.2f meters%n", pose.tagSpan)
+        System.out.printf("Average Tag Distance: %.2f meters%n", pose.avgTagDist)
+        System.out.printf("Average Tag Area: %.2f%% of image%n", pose.avgTagArea)
+        println()
+
+        if (pose.rawFiducials == null || pose.rawFiducials!!.size == 0) {
+            println("No RawFiducials data available.")
+            return
+        }
+
+        println("Raw Fiducials Details:")
+        for (i in pose.rawFiducials!!.indices) {
+            val fiducial = pose.rawFiducials!![i]
+            System.out.printf(" Fiducial #%d:%n", i + 1)
+            System.out.printf("  ID: %d%n", fiducial!!.id)
+            System.out.printf("  TXNC: %.2f%n", fiducial.txnc)
+            System.out.printf("  TYNC: %.2f%n", fiducial.tync)
+            System.out.printf("  TA: %.2f%n", fiducial.ta)
+            System.out.printf("  Distance to Camera: %.2f meters%n", fiducial.distToCamera)
+            System.out.printf("  Distance to Robot: %.2f meters%n", fiducial.distToRobot)
+            System.out.printf("  Ambiguity: %.2f%n", fiducial.ambiguity)
+            println()
+        }
     }
 
     fun getLimelightNTTable(tableName: String?): NetworkTable {
@@ -100,7 +178,6 @@ object LimelightHelpers {
 
     /////
     /////
-    @JvmStatic
     fun getTX(limelightName: String?): Double {
         return getLimelightNTDouble(limelightName, "tx")
     }
@@ -198,8 +275,8 @@ object LimelightHelpers {
         return getLimelightNTDouble(limelightName, "tid")
     }
 
-    fun getNeuralClassID(limelightName: String?): Double {
-        return getLimelightNTDouble(limelightName, "tclass")
+    fun getNeuralClassID(limelightName: String?): String {
+        return getLimelightNTString(limelightName, "tclass")
     }
 
     /////
@@ -257,6 +334,17 @@ object LimelightHelpers {
     }
 
     /**
+     * Gets the Pose2d and timestamp for use with WPILib pose estimator (addVisionMeasurement) when you are on the BLUE
+     * alliance
+     *
+     * @param limelightName
+     * @return
+     */
+    fun getBotPoseEstimate_wpiBlue(limelightName: String): PoseEstimate {
+        return getBotPoseEstimate(limelightName, "botpose_wpiblue")
+    }
+
+    /**
      * Gets the Pose2d for easy use with Odometry vision pose estimator
      * (addVisionMeasurement)
      *
@@ -266,6 +354,16 @@ object LimelightHelpers {
     fun getBotPose2d_wpiRed(limelightName: String?): Pose2d {
         val result = getBotPose_wpiRed(limelightName)
         return toPose2D(result)
+    }
+
+    /**
+     * Gets the Pose2d and timestamp for use with WPILib pose estimator (addVisionMeasurement) when you are on the RED
+     * alliance
+     * @param limelightName
+     * @return
+     */
+    fun getBotPoseEstimate_wpiRed(limelightName: String): PoseEstimate {
+        return getBotPoseEstimate(limelightName, "botpose_wpired")
     }
 
     /**
@@ -280,16 +378,19 @@ object LimelightHelpers {
         return toPose2D(result)
     }
 
-    @JvmStatic
     fun getTV(limelightName: String?): Boolean {
         return 1.0 == getLimelightNTDouble(limelightName, "tv")
     }
 
     /////
     /////
-    @JvmStatic
     fun setPipelineIndex(limelightName: String?, pipelineIndex: Int) {
         setLimelightNTDouble(limelightName, "pipeline", pipelineIndex.toDouble())
+    }
+
+
+    fun setPriorityTagID(limelightName: String?, ID: Int) {
+        setLimelightNTDouble(limelightName, "priorityid", ID.toDouble())
     }
 
     /**
@@ -353,7 +454,7 @@ object LimelightHelpers {
         up: Double,
         roll: Double,
         pitch: Double,
-        yaw: Double
+        yaw: Double,
     ) {
         val entries = DoubleArray(6)
         entries[0] = forward
@@ -381,7 +482,12 @@ object LimelightHelpers {
      * Asynchronously take snapshot.
      */
     fun takeSnapshot(tableName: String, snapshotName: String?): CompletableFuture<Boolean> {
-        return CompletableFuture.supplyAsync { SYNCH_TAKESNAPSHOT(tableName, snapshotName) }
+        return CompletableFuture.supplyAsync {
+            SYNCH_TAKESNAPSHOT(
+                tableName,
+                snapshotName
+            )
+        }
     }
 
     private fun SYNCH_TAKESNAPSHOT(tableName: String, snapshotName: String?): Boolean {
@@ -418,7 +524,7 @@ object LimelightHelpers {
         try {
             results = mapper!!.readValue(getJSONDump(limelightName), LimelightResults::class.java)
         } catch (e: JsonProcessingException) {
-            System.err.println("lljson error: " + e.message)
+            results.error = "lljson error: " + e.message
         }
 
         val end = System.nanoTime()
@@ -654,6 +760,18 @@ object LimelightHelpers {
         @JsonProperty("botpose_wpiblue")
         var botpose_wpiblue: DoubleArray = DoubleArray(6)
 
+        @JsonProperty("botpose_tagcount")
+        var botpose_tagcount: Double = 0.0
+
+        @JsonProperty("botpose_span")
+        var botpose_span: Double = 0.0
+
+        @JsonProperty("botpose_avgdist")
+        var botpose_avgdist: Double = 0.0
+
+        @JsonProperty("botpose_avgarea")
+        var botpose_avgarea: Double = 0.0
+
         @JsonProperty("t6c_rs")
         var camerapose_robotspace: DoubleArray = DoubleArray(6)
 
@@ -694,5 +812,23 @@ object LimelightHelpers {
     class LimelightResults {
         @JsonProperty("Results")
         var targetingResults: Results = Results()
+
+        var error: String = ""
     }
+
+    class RawFiducial(
+        var id: Int,
+        var txnc: Double,
+        var tync: Double,
+        var ta: Double,
+        var distToCamera: Double,
+        var distToRobot: Double,
+        var ambiguity: Double,
+    )
+
+    class PoseEstimate(
+        var pose: Pose2d, var timestampSeconds: Double, var latency: Double,
+        var tagCount: Int, var tagSpan: Double, var avgTagDist: Double,
+        var avgTagArea: Double, var rawFiducials: Array<RawFiducial?>?,
+    )
 }

@@ -50,4 +50,8 @@ class ShooterIOSim : ShooterIO {
         lowerMotorSim.setInputVoltage(lowerController.calculate(lowerMotorSim.angularVelocityRadPerSec, lowerRpm))
         upperMotorSim.setInputVoltage(upperController.calculate(upperMotorSim.angularVelocityRadPerSec, upperRpm))
     }
+
+    override fun getVelocity(): Double {
+        TODO("Not yet implemented")
+    }
 }

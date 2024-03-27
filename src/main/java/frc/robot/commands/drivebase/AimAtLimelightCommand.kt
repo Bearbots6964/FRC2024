@@ -5,9 +5,9 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.subsystems.SwerveSubsystem
 import frc.robot.subsystems.VisionSubsystem
-import frc.robot.util.LimelightHelpers.getTV
-import frc.robot.util.LimelightHelpers.getTX
-import frc.robot.util.LimelightHelpers.setPipelineIndex
+import frc.robot.LimelightHelpers.getTV
+import frc.robot.LimelightHelpers.getTX
+import frc.robot.LimelightHelpers.setPipelineIndex
 import kotlin.math.abs
 
 /**
@@ -25,7 +25,7 @@ class AimAtLimelightCommand(
     /**
      *
      */
-    var speed: Double = 0.0
+    var speed: Double = 1.0
 
     init {
         // each subsystem used by the command must be passed into the
@@ -39,7 +39,6 @@ class AimAtLimelightCommand(
      */
     override fun initialize() {
         setPipelineIndex("limelight-back", 1)
-        isRedAlliance = (DriverStation.getAlliance().get() == DriverStation.Alliance.Red)
 
         // Take the current angle and see if it's faster to rotate clockwise or counterclockwise to get to 180 degrees
         val currentAngle = swerveSubsystem.heading.degrees // (-180, 180]
@@ -54,18 +53,19 @@ class AimAtLimelightCommand(
         if (getTV("limelight-back")) {
             swerveSubsystem.swerveDrive.drive(
                 Translation2d(0.0, 0.0),
-                visionSubsystem.limelightAimProportionalBack() / 5,
+                -visionSubsystem.limelightAimProportionalBack() * 3,
                 false,
                 false
             )
         } else {
             if (swerveSubsystem.heading.degrees < 140 && swerveSubsystem.heading.degrees > -140) swerveSubsystem.swerveDrive.drive(
                 Translation2d(0.0, 0.0),
-                rotateCW,
+                rotateCW * 3,
                 false,
                 false
             )
-            else swerveSubsystem.swerveDrive.drive(Translation2d(0.0, 0.0), rotateCW / speed / 2, false, false)
+
+            else swerveSubsystem.swerveDrive.drive(Translation2d(0.0, 0.0), -rotateCW * 3, false, false)
         }
     }
 
@@ -73,7 +73,7 @@ class AimAtLimelightCommand(
      *
      */
     override fun isFinished(): Boolean {
-        return (abs(getTX("limelight-back")) < 1.0) && getTV("limelight-back")
+        return (abs(getTX("limelight-back")) < 3.0) && getTV("limelight-back")
     }
 
     /**

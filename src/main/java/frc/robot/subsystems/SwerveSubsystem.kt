@@ -10,6 +10,7 @@ import com.pathplanner.lib.path.PathConstraints
 import com.pathplanner.lib.path.PathPlannerPath
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig
 import com.pathplanner.lib.util.ReplanningConfig
+import edu.wpi.first.math.VecBuilder
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
@@ -24,8 +25,8 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
+import frc.robot.LimelightHelpers
 import frc.robot.util.Constants.AutonomousConstants
-import frc.robot.util.LimelightHelpers
 import org.littletonrobotics.junction.Logger
 import swervelib.SwerveController
 import swervelib.SwerveDrive
@@ -72,25 +73,9 @@ class SwerveSubsystem : SubsystemBase {
     constructor(directory: File?) {
 
 
-        // Angle conversion factor is 360 / (GEAR RATIO * ENCODER RESOLUTION)
-        //  In this case the gear ratio is 12.8 motor revolutions per wheel rotation.
-        //  The encoder resolution per motor revolution is 1 per motor revolution.
-        val angleConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(12.8)
-
-
-        // Motor conversion factor is (PI * WHEEL DIAMETER IN METERS) / (GEAR RATIO * ENCODER RESOLUTION).
-        //  In this case the wheel diameter is 4 inches, which must be converted to meters to get meters/second.
-        //  The gear ratio is 6.75 motor revolutions per wheel rotation.
-        //  The encoder resolution per motor revolution is 1 per motor revolution.
-        val driveConversionFactor = SwerveMath.calculateMetersPerRotation(Units.inchesToMeters(4.0), 6.75)
-        println("\"conversionFactor\": {")
-        println("\t\"angle\": $angleConversionFactor,")
-        println("\t\"drive\": $driveConversionFactor")
-        println("}")
-
 
         // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being created.
-        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH
+        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.LOW
         try {
             swerveDrive = SwerveParser(directory).createSwerveDrive(maximumSpeed)
             // Alternative method if you don't want to supply the conversion factor via JSON files.
@@ -129,9 +114,9 @@ class SwerveSubsystem : SubsystemBase {
             HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                 AutonomousConstants.TRANSLATION_PID,  // Translation PID constants
                 AutonomousConstants.ANGLE_PID,  // Rotation PID constants
-                4.5,  // Max module speed, in m/s
+                1.0,  // Max module speed, in m/s
                 swerveDrive.swerveDriveConfiguration.driveBaseRadiusMeters,  // Drive base radius in meters. Distance from robot center to furthest module.
-                ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
+                ReplanningConfig(true, false) // Default path replanning config. See the API for the options here
             ), {
                 // Boolean supplier that controls when the path will be mirrored for the red alliance
                 // This will flip the path being followed to the red side of the field.
@@ -179,10 +164,9 @@ class SwerveSubsystem : SubsystemBase {
      */
     fun driveToPose(pose: Pose2d?): Command {
         lockRotation = true
-        val path = PathPlannerPath.fromPathFile("Go to red speaker")
         // Create the constraints to use while pathfinding
         val constraints = PathConstraints(
-            swerveDrive.maximumVelocity, 4.0, swerveDrive.maximumAngularVelocity, Units.degreesToRadians(720.0)
+            1.0, 1.0, swerveDrive.maximumAngularVelocity, Units.degreesToRadians(720.0)
         )
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
@@ -190,6 +174,17 @@ class SwerveSubsystem : SubsystemBase {
             pose, constraints, 0.0,  // Goal end velocity in meters/sec
             0.0 // Rotation delay distance in meters. This is how far the robot should travel before attempting to rotate.
         )
+    }
+
+    fun pathfindThenFollowPath(pathName: String): Command {
+        val path = PathPlannerPath.fromPathFile(pathName)
+        // Create the constraints to use while pathfinding
+        val constraints = PathConstraints(
+            2.0, 2.0, swerveDrive.maximumAngularVelocity, Units.degreesToRadians(720.0)
+        )
+
+        // Since AutoBuilder is configured, we can use it to build pathfinding commands
+        return AutoBuilder.pathfindThenFollowPath(path, constraints, 0.0)
     }
 
     /**
@@ -292,13 +287,11 @@ class SwerveSubsystem : SubsystemBase {
                 Translation2d(
                     translationX.asDouble.pow(3.0) * swerveDrive.maximumVelocity,
                     translationY.asDouble.pow(3.0) * swerveDrive.maximumVelocity
-                ),
-                angularRotationX.asDouble.pow(3.0) * swerveDrive.maximumAngularVelocity,
-                true,
-                false
+                ), angularRotationX.asDouble.pow(3.0) * swerveDrive.maximumAngularVelocity, true, false
             )
         }
     }
+
     fun botDriveCommand(
         translationX: DoubleSupplier,
         translationY: DoubleSupplier,
@@ -310,10 +303,7 @@ class SwerveSubsystem : SubsystemBase {
                 Translation2d(
                     translationX.asDouble.pow(3.0) * swerveDrive.maximumVelocity,
                     translationY.asDouble.pow(3.0) * swerveDrive.maximumVelocity
-                ),
-                angularRotationX.asDouble.pow(3.0) * swerveDrive.maximumAngularVelocity,
-                false,
-                false
+                ), angularRotationX.asDouble.pow(3.0) * swerveDrive.maximumAngularVelocity, false, false
             )
         }
     }
@@ -360,19 +350,15 @@ class SwerveSubsystem : SubsystemBase {
      *
      */
     override fun periodic() {
-        if (LimelightHelpers.getTV("limelight-back") && enableApriltags) swerveDrive.addVisionMeasurement(
-            LimelightHelpers.getBotPose2d(
-                "limelight-back"
-            ),
-            Timer.getFPGATimestamp() - (LimelightHelpers.getLatency_Pipeline("limelight-back") + LimelightHelpers.getLatency_Capture(
-                "limelight-back"
-            )) / 1000.0
-        )
+        var limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-back")
+
+        if (limelightMeasurement.tagCount >= 2 && limelightMeasurement.avgTagDist < 5.0 && enableApriltags) {
+            swerveDrive.addVisionMeasurement(
+                limelightMeasurement.pose, limelightMeasurement.timestampSeconds, VecBuilder.fill(20.0, 20.0, 2576395649.0)
+            )
+        }
         Logger.recordOutput(
-            "Limelight Pose",
-            LimelightHelpers.getBotPose2d(
-                "limelight-back"
-            ),
+            "Limelight Pose", limelightMeasurement.pose
         )
         Logger.recordOutput("Pose", pose)
         // PathPlannerLogging.logCurrentPose(getPose());
@@ -568,9 +554,9 @@ class SwerveSubsystem : SubsystemBase {
         get() = swerveDrive.pitch
 
 
-        /**
+    /**
      * Add a fake vision reading for testing purposes.
-         */
+     */
     fun addFakeVisionReading() {
         swerveDrive.addVisionMeasurement(Pose2d(3.0, 3.0, Rotation2d.fromDegrees(65.0)), Timer.getFPGATimestamp())
     }

@@ -1,7 +1,8 @@
 package frc.robot.subsystems
 
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj2.command.SubsystemBase
-import frc.robot.util.LimelightHelpers
+import frc.robot.LimelightHelpers
 import org.littletonrobotics.junction.*
 
 class VisionSubsystem
@@ -63,7 +64,7 @@ private constructor() : SubsystemBase() {
         var targetingAngularVelocity = LimelightHelpers.getTX("limelight-back") * kP
 
         // convert to radians per second for our drive method
-        targetingAngularVelocity *= 1
+        targetingAngularVelocity *= Math.PI
 
         //invert since tx is positive when the target is to the right of the crosshair
         targetingAngularVelocity *= 1.0

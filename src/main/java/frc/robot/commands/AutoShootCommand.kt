@@ -7,9 +7,9 @@ import java.util.function.DoubleSupplier
 /**
  *
  */
-class ShootCommand(
+class AutoShootCommand(
     private val shooter: Shooter,
-    private val speed: DoubleSupplier,
+    private val speed: Double,
     private val shooterIsRunning: () -> Unit,
     private val shooterIsNotRunning: () -> Unit,
 ) : Command() {
@@ -31,8 +31,8 @@ class ShootCommand(
      *
      */
     override fun execute() {
-        shooter.setVelocity(Math.pow(speed.asDouble, 2.00) * maxRpm, Math.pow(speed.asDouble, 2.00) * maxRpm)
-        if(speed.asDouble > 0.05) {
+        shooter.setVelocity(speed, speed)
+        if(speed > 100) {
             shooterIsRunning()
         } else {
             shooterIsNotRunning()

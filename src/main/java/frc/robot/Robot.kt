@@ -5,6 +5,7 @@ package frc.robot
 
 import com.pathplanner.lib.pathfinding.Pathfinding
 import edu.wpi.first.wpilibj.DataLogManager
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
@@ -35,6 +36,7 @@ class Robot : LoggedRobot() {
      *
      */
     override fun robotInit() {
+        DriverStation.silenceJoystickConnectionWarning(true) // AGHGHGHGGH SHUT UP
         Pathfinding.setPathfinder(LocalADStarAK())
         DataLogManager.start()
 
@@ -93,7 +95,16 @@ class Robot : LoggedRobot() {
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run()
 
-        robotContainer?.let { SmartDashboard.putBoolean("Note", it.hasNote) }
+
+        try {
+            RobotContainer.alliance = DriverStation.getAlliance().get()
+        } catch (e: Exception) {
+            println(e)
+            RobotContainer.alliance = DriverStation.Alliance.Blue
+        }
+        if (RobotContainer.alliance == DriverStation.Alliance.Red) RobotContainer.invert = -1
+        else RobotContainer.invert = 1
+
     }
 
     /** This function is called once each time the robot enters Disabled mode.  */
@@ -106,7 +117,7 @@ class Robot : LoggedRobot() {
 
     /** This autonomous runs the autonomous command selected by your [RobotContainer] class.  */
     override fun autonomousInit() {
-        autonomousCommand = robotContainer?.autonomousCommand
+        autonomousCommand = robotContainer?.getAutonomousCommand()
 
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {

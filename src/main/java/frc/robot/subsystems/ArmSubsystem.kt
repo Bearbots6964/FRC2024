@@ -178,6 +178,8 @@ class ArmSubsystem private constructor() : SubsystemBase() {
             encoder.setZeroOffset(35.2)
         }
 
+        SmartDashboard.putNumber("angle", encoder.position)
+
         //pidController.setReference(SmartDashboard.getNumber("Arm Setpoint", setpoint), CANSparkMax.ControlType.kPosition);
     }
     fun homeArm() {

@@ -33,6 +33,7 @@ class Shooter(private val io: ShooterIO) : SubsystemBase() {
     fun setVelocity(lowerRpm: Double, upperRpm: Double) {
         io.setVelocity(lowerRpm, upperRpm)
     }
+    fun getVelocity(): Double { return io.getVelocity() }
 
 
     val sysIdRoutine: SysIdRoutine

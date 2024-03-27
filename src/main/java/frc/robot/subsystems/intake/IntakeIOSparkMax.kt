@@ -48,7 +48,7 @@ class IntakeIOSparkMax : IntakeIO {
         rightRollerMotor.pidController.setFeedbackDevice(rightRollerMotor.encoder)
         cerealizerMotor.pidController.setFeedbackDevice(cerealizerMotor.encoder)
 
-        intakeMotor.setSmartCurrentLimit(20)
+        intakeMotor.setSmartCurrentLimit(40)
         leftRollerMotor.setSmartCurrentLimit(20)
         rightRollerMotor.setSmartCurrentLimit(20)
         cerealizerMotor.setSmartCurrentLimit(20)
@@ -97,6 +97,7 @@ class IntakeIOSparkMax : IntakeIO {
         inputs.cerealizerCurrentAmps = doubleArrayOf(cerealizerMotor.outputCurrent)
 
         SmartDashboard.putNumber("Color Sensor Proximity", Companion.colorSensor.proximity.toDouble())
+        SmartDashboard.putBoolean("Has Note?", Companion.colorSensor.proximity.toDouble() < 150.0)
     }
 
     override fun set(intakePercent: Double, cerealizerPercent: Double) {
