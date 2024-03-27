@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.subsystems.SwerveSubsystem
 import frc.robot.util.Constants
+import org.littletonrobotics.junction.Logger
 import swervelib.SwerveController
 import swervelib.math.SwerveMath
 import java.util.function.BooleanSupplier
@@ -107,8 +108,8 @@ class AbsoluteDriveAdv(
             Constants.LOOP_TIME, Constants.ROBOT_MASS, listOf(Constants.CHASSIS),
             swerve.swerveDriveConfiguration
         )
-        SmartDashboard.putNumber("LimitedTranslation", translation.x)
-        SmartDashboard.putString("Translation", translation.toString())
+        Logger.recordOutput("AbsoluteDriveAdv/LimitedTranslation", translation.x)
+        Logger.recordOutput("AbsoluteDriveAdv/Translation", translation.toString())
 
         // Make the robot move
         if (headingX == 0.0 && headingY == 0.0 && abs(headingAdjust.asDouble) > 0) {

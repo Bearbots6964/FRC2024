@@ -18,10 +18,10 @@ public class AutonomousCommands(
 ) : SequentialCommandGroup() {
     init {
         addCommands(
-                swerveSubsystem.getAutonomousCommand("start-to-speaker"),
+                //swerveSubsystem.getAutonomousCommand("start-to-speaker"),
                 InstantCommand({armSubsystem.moveArmToAngle(50.0)}, armSubsystem),
                 ShootCommand(shooter, {Constants.ShooterConstants.MAX_VELOCITY}, {}, {}),
-                swerveSubsystem.getAutonomousCommand("speaker-to-note-2"),
+                //swerveSubsystem.getAutonomousCommand("speaker-to-note-2"),
                 IntakeCommand(intake),
         )
     }

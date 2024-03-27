@@ -100,4 +100,6 @@ interface ShooterIO {
      *
      */
     fun setVoltage(volts: Double) {}
+
+    fun getVelocity(): Double
 }

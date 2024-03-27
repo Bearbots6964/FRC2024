@@ -134,4 +134,8 @@ class ShooterIOSparkFlex : ShooterIO {
         const val I: Double = ShooterConstants.I
         const val D: Double = ShooterConstants.D
     }
+
+    override fun getVelocity(): Double {
+        return upperEncoder.velocity
+    }
 }
