@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.253064626377231,
+        "y": 0.7980726668327629
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.126158505246699,
+        "y": 0.7598666112859558
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.375993003389816,
+        "y": 1.5144341112831214
+      },
+      "prevControl": {
+        "x": 5.0808279301233545,
+        "y": 1.1657860294741929
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "AZ Auto Lob"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 90.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -26.32775757208591,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

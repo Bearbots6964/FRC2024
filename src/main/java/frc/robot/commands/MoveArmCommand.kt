@@ -1,6 +1,5 @@
 package frc.robot.commands
 
-import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.subsystems.ArmSubsystem
 import java.util.function.DoubleSupplier
@@ -39,6 +38,8 @@ class MoveArmCommand(
     override fun execute() {
         //armSubsystem.moveArmButWithVelocity(speed.getAsDouble() * 144);
         angle -= speed.asDouble
+        if (angle < 35.0) angle = 35.0
+        if (angle > 235.0) angle = 235.0
         armSubsystem.moveArmToAngle(angle)
     }
 

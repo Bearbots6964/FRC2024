@@ -3,6 +3,7 @@ package frc.robot.subsystems.intake
 import edu.wpi.first.math.util.Units
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Voltage
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog
 import edu.wpi.first.wpilibj2.command.*
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
@@ -25,6 +26,8 @@ class Intake(val io: IntakeIO) : SubsystemBase() {
     override fun periodic() {
         io.updateInputs(inputs)
         Logger.processInputs("Intake", inputs)
+
+        SmartDashboard.putString("Color Sensor", io.colorSensorColor.get().toHexString())
     }
 
     /** Returns a command that intakes a note.  */
@@ -45,6 +48,9 @@ class Intake(val io: IntakeIO) : SubsystemBase() {
 
     operator fun set(intakePercent: Double, cerealizerPercent: Double) {
         io[intakePercent] = cerealizerPercent
+    }
+    fun set(intakeMotorPercent: Double, intakePercent: Double, cerealizerPercent: Double) {
+        io.set(intakeMotorPercent, intakePercent, cerealizerPercent)
     }
 
     fun setIntakeVelocity(intakeRpm: Double) {

@@ -25,9 +25,9 @@ class IntakeCommand(private val intake: Intake) : Command() {
      *
      */
     override fun execute() {
-        intake.set(0.375, -0.375)
+        intake.set(0.55, 0.375, -0.375)
         Logger.recordOutput("Proximity", (intake.colorSensorProximity ?: return).asDouble)
-        if (intake.colorSensorProximity!!.asDouble <= 150) RobotContainer.hasNote = false
+        if ((intake.colorSensorProximity ?: return).asDouble <= 150) RobotContainer.hasNote = false
     }
 
     /**
@@ -43,7 +43,7 @@ class IntakeCommand(private val intake: Intake) : Command() {
      */
     override fun end(interrupted: Boolean) {
         intake.set(0.0, 0.0)
-        if (intake.colorSensorProximity!!.asDouble > 150) RobotContainer.hasNote = true
+        if ((intake.colorSensorProximity ?: return).asDouble > 150) RobotContainer.hasNote = true
         RobotContainer.rumbleShooterControllerTwiceNotifier.startSingle(0.0)
 
     }

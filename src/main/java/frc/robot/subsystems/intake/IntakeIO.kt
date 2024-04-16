@@ -64,6 +64,7 @@ interface IntakeIO {
 
     /** Run open loop at the specified voltage.  */
     operator fun set(intakePercent: Double, cerealizerPercent: Double) {}
+    operator fun set(intakeMotorPercent: Double, intakePercent: Double, cerealizerPercent: Double) {}
 
     /** Run closed loop at the specified velocity.  */
     fun setVelocity(

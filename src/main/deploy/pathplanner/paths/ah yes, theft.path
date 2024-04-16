@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.488321535550717,
+        "y": 4.118147074577142
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.488321535550717,
+        "y": 4.118147074577142
+      },
+      "isLocked": false,
+      "linkedName": "yeah im a gamer"
+    },
+    {
+      "anchor": {
+        "x": 8.205969306051335,
+        "y": 2.4599155725149475
+      },
+      "prevControl": {
+        "x": 7.462367991403811,
+        "y": 2.773852126683744
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "note 2 baybee"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 90.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -37.87790914760137,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "us vs those losers",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
