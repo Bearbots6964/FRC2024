@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.InstantCommand
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup
+import edu.wpi.first.wpilibj2.command.RepeatCommand
 import edu.wpi.first.wpilibj2.command.WaitCommand
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import frc.robot.commands.*
@@ -44,7 +45,9 @@ import java.io.File
  */
 class RobotContainer {
     // The robot's subsystems and commands are defined here...
-    val drivebase = SwerveSubsystem(File(Filesystem.getDeployDirectory(), "g"))
+    val drivebase: SwerveSubsystem = SwerveSubsystem(File(Filesystem.getDeployDirectory(), "g"))
+
+    //<editor-fold desc="Command declaration">
     private val intake = Intake(IntakeIOSparkMax())
     private val shooter = Shooter(ShooterIOSparkFlex())
     private val armSubsystem: ArmSubsystem = ArmSubsystem.instance
@@ -64,8 +67,10 @@ class RobotContainer {
     val driveBotOrientedAngularVelocity: Command
     private val autoShootCommand: Command
     private val pushNoteStatus: Command
-
+    private val emoteCommand: Command
     private val absoluteFieldDrive: Command
+    private val restartRioCommand: Command
+    //</editor-fold>
 
     private var shooterRunning: Boolean = false
 
@@ -75,45 +80,51 @@ class RobotContainer {
 
 
     /**
-     *
-     */
-
-
-    /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     init {
 
+        //<editor-fold desc="PathPlanner auto command registration">
         NamedCommands.registerCommands(
             mapOf(
                 Pair("intakeCommand", IntakeCommand(intake)),
                 Pair(
                     "shootCommand",
-                    ShootCommand(shooter, { 0.9 }, { shooterRunning = true }, { shooterRunning = false })
+                    ShootCommand(shooter, { 0.9 }, { shooterRunning = true }, { shooterRunning = false }, { 0.0 })
                 ),
                 Pair(
                     "shootCommand2",
-                    ShootCommand(shooter, { 0.9 }, { shooterRunning = true }, { shooterRunning = false })
+                    ShootCommand(shooter, { 0.9 }, { shooterRunning = true }, { shooterRunning = false }, { 0.0 })
+                ),
+                Pair(
+                    "shootHarderCommand",
+                    ShootCommand(shooter, { 0.95 }, { shooterRunning = true }, { shooterRunning = false }, { 0.0 })
                 ),
                 Pair("moveArmCommand", InstantCommand({ armSubsystem.moveArmToAngle(62.0) }, armSubsystem)),
                 Pair("moveArmCommand2", InstantCommand({ armSubsystem.moveArmToAngle(52.0) }, armSubsystem)),
                 Pair("frostedFlakesCommand", FrostedFlakesCommand(intake, false)),
                 Pair("homeArmCommand", InstantCommand({ armSubsystem.moveArmToAngle(40.0) }, armSubsystem)),
+                Pair("homeArmCommandButABitUp", InstantCommand({ armSubsystem.moveArmToAngle(43.5) }, armSubsystem)),
+
                 Pair(
                     "moveToCenter",
-                    drivebase.driveToPose(Pose2d(Translation2d(8.250, 7.374), Rotation2d(Math.PI)))
+                    drivebase.driveToPose(Pose2d(Translation2d(8.33, 0.8), Rotation2d(Math.PI)))
                         .alongWith(IntakeCommand(intake))
                 ),
-                Pair("aim", AimAtLimelightCommand(drivebase, VisionSubsystem.instance))
+                Pair("aim", AimAtLimelightCommand(drivebase, VisionSubsystem.instance)),
+                Pair("shootABitSlowerCommand", ShootCommand(shooter, { 0.0 }, { shooterRunning = true }, { shooterRunning = false }, { 1.0 })),
+                        Pair("homeArmCommandButABitLessUp", InstantCommand({ armSubsystem.moveArmToAngle(41.75) }, armSubsystem)),
             )
         )
+        //</editor-fold>
+        //<editor-fold desc="Command instantiation">
         intakeCommand = IntakeCommand(intake)
         shootCommand = ShootCommand(shooter, { MathUtil.applyDeadband(shooterXbox.rightTriggerAxis, 0.1) },
-            { shooterRunning = true }, { shooterRunning = false })
+            { shooterRunning = true }, { shooterRunning = false }, { shooterXbox.leftTriggerAxis })
         aimAtLimelightCommand = AimAtLimelightCommand(drivebase, VisionSubsystem.instance)
         rotateCommand = RotateCommand(drivebase)
         driveToPoseCommand = ShootCommand(shooter, { 4000.0 },
-            { shooterRunning = true }, { shooterRunning = false }).alongWith(
+            { shooterRunning = true }, { shooterRunning = false }, { 0.0 }).alongWith(
             drivebase.driveToPose(
                 Pose2d(
                     Translation2d(
@@ -133,24 +144,24 @@ class RobotContainer {
         frostedFlakesCommand = FrostedFlakesCommand(intake, false)
         overrideShootCommand = FrostedFlakesCommand(intake, true)
         autoShootCommand =
-            ShootCommand(shooter, { return@ShootCommand 0.1 }, { shooterRunning = true }, { shooterRunning = false })
-
-
-
+            ShootCommand(
+                shooter,
+                { return@ShootCommand 0.1 },
+                { shooterRunning = true },
+                { shooterRunning = false },
+                { 0.0 })
         moveArmToAmpCommand = MoveArmToAmpCommand(armSubsystem)
+        emoteCommand = EmoteCommand(drivebase)
+        restartRioCommand = RestartRioCommand()
 
-
-
-
-
-
-
+        //</editor-fold>
+        //<editor-fold desc="Swerve commands and setup">
         absoluteFieldDrive = AbsoluteFieldDrive(drivebase,
             { MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) * invert },
             { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
             { driverXbox.rightX * invert })
 
-        pushNoteStatus = UtilityCommand({ SmartDashboard.putBoolean("Note", hasNote) })
+        pushNoteStatus = UtilityCommand { SmartDashboard.putBoolean("Note", hasNote) }
         // Applies deadbands and inverts controls because joysticks
         // are back-right positive while robot
         // controls are front-left positive
@@ -188,7 +199,7 @@ class RobotContainer {
             ) * invert
         },
             { -MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
-            { -driverXbox.rightX * 2 })
+            { -driverXbox.rightX })
 
 
         driveBotOrientedAngularVelocity = drivebase.botDriveCommand({
@@ -209,8 +220,6 @@ class RobotContainer {
             { MathUtil.applyDeadband(driverXbox.leftX, OperatorConstants.LEFT_X_DEADBAND) * invert },
             { driverXbox.getRawAxis(2) * invert })
 
-        val sysIdForDrive = drivebase.sysIdDriveMotorCommand()
-        val sysIdForAngle = drivebase.sysIdAngleMotorCommand()
 
         val driveFieldOrientedDirectAngleForTesting =
             drivebase.driveCommand({ MathUtil.applyDeadband(driverXbox.leftY, OperatorConstants.LEFT_Y_DEADBAND) },
@@ -220,21 +229,24 @@ class RobotContainer {
 
         drivebase.defaultCommand =
             driveFieldOrientedAnglularVelocity
+        //</editor-fold>
 
         // Configure the trigger bindings
         configureBindings()
 
-        chooser = AutoBuilder.buildAutoChooser()
+        chooser = AutoBuilder.buildAutoChooser("4-note auto without exit")
         SmartDashboard.putData("auto choices", chooser)
 
+        //<editor-fold desc="Alliance setup">
         try {
             alliance = DriverStation.getAlliance().get()
         } catch (e: Exception) {
             println(e)
             alliance = Alliance.Blue
         }
-        if (alliance == Alliance.Red) invert = -1
-        else invert = 1
+        invert = if (alliance == Alliance.Red) -1
+        else 1
+        //</editor-fold>
     }
 
 
@@ -248,15 +260,14 @@ class RobotContainer {
     private fun configureBindings() {
         // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
+
+        //<editor-fold desc="Driver controller bindings">
         JoystickButton(driverXbox, Button.kA.value).onTrue((InstantCommand({ drivebase.zeroGyro() })))
         JoystickButton(driverXbox, Button.kX.value).whileTrue(aimAtLimelightCommand)
         JoystickButton(driverXbox, Button.kB.value).whileTrue(
-            drivebase.driveToPose(
-                Pose2d(
-                    Translation2d(9.700, 7.686),
-                    Rotation2d(2.385)
-                )
-            )
+            drivebase.pathfindThenFollowPath("New New Path")
+                .alongWith(InstantCommand({ armSubsystem.moveArmToAngle(38.0) }, armSubsystem))
+                .andThen(RepeatCommand(drivebase.driveCommand({ 0.0 }, { 0.0 }, { 1.0 }, { -0.95 })))
         )
         JoystickButton(driverXbox, Button.kLeftBumper.value).whileTrue(
             Commands.run({
@@ -272,7 +283,7 @@ class RobotContainer {
             })
         )
 
-        JoystickButton(driverXbox, Button.kY.value).whileTrue(drivebase.pathfindThenFollowPath("test-pid"))
+        JoystickButton(driverXbox, Button.kY.value).whileTrue(aimAndPickUpNoteCommand)
         JoystickButton(
             driverXbox,
             Button.kStart.value
@@ -280,10 +291,18 @@ class RobotContainer {
         JoystickButton(driverXbox, Button.kBack.value).onTrue(Commands.runOnce({
             drivebase.enableApriltags = !drivebase.enableApriltags
             SmartDashboard.putBoolean("AprilTags Enabled?", drivebase.enableApriltags)
+            if (drivebase.enableApriltags) LimelightHelpers.setPipelineIndex("limelight-back", 0)
+            if (!drivebase.enableApriltags) LimelightHelpers.setPipelineIndex("limelight-back", 1)
+
         }))
 
+        JoystickButton(
+            driverXbox,
+            Button.kRightBumper.value
+        ).whileTrue(AutoBuilder.buildAuto("Go to speaker and shoot"))
 
-        // for the intake, if the shooter is running, execute the frosted flakes command, and otherwise, execute the intake command
+        //</editor-fold>
+        //<editor-fold desc="Shooter controller bindings">
         JoystickButton(shooterXbox, Button.kLeftBumper.value).whileTrue(
             Commands.either(
                 frostedFlakesCommand,
@@ -297,10 +316,21 @@ class RobotContainer {
             CommandScheduler.getInstance().cancel(homeArmCommand, moveArmToAmpCommand, moveArmCommand)
         }))
 
-
-
+        JoystickButton(shooterXbox, Button.kBack.value).whileTrue(
+            RepeatCommand(
+                drivebase.driveCommand(
+                    { 0.0 },
+                    { 0.0 },
+                    { 0.0 },
+                    { -1.0 })
+            ).alongWith(Commands.run({ armSubsystem.moveArmToAngle(50.685) })
+                .andThen(Commands.run({ shooter.setVelocity(2625.0, 2625.0) }))
+            )
+        )
+        //</editor-fold>
         shooter.defaultCommand = shootCommand
         armSubsystem.defaultCommand = moveArmCommand
+
     }
 
 
@@ -321,7 +351,7 @@ class RobotContainer {
         var shooterXbox: XboxController = XboxController(1)
 
 
-        val rumbleShooterControllerTwiceNotifier = Notifier {
+        val rumbleShooterControllerTwiceNotifier: Notifier = Notifier {
             shooterXbox.setRumble(RumbleType.kBothRumble, 0.5)
             Thread.sleep(125)
             shooterXbox.setRumble(RumbleType.kBothRumble, 0.0)
@@ -339,5 +369,71 @@ class RobotContainer {
 
         var hasNote: Boolean = false
     }
+
+    fun executePov() {
+        var pov = driverXbox.pov
+        when (pov) {
+            0 -> {
+                CommandScheduler.getInstance().schedule(emoteCommand)
+            }
+            45 -> {
+                // not assigned
+            }
+            90 -> {
+                // not assigned
+            }
+            135 -> {
+                // not assigned
+            }
+            180 -> {
+                // not assigned
+            }
+            225 -> {
+                // not assigned
+            }
+            270 -> {
+                // not assigned
+            }
+            315 -> {
+                // not assigned
+            }
+            -1 -> {
+                CommandScheduler.getInstance().cancel(emoteCommand)
+            }
+        }
+
+
+        pov = shooterXbox.pov
+        when (pov) {
+            0 -> {
+                armSubsystem.moveArmToAngle(61.37)
+            }
+            45 -> {
+                // not assigned
+            }
+            90 -> {
+                // not assigned
+            }
+            135 -> {
+                // not assigned
+            }
+            180 -> {
+                // not assigned
+            }
+            225 -> {
+                // not assigned
+            }
+            270 -> {
+                // not assigned
+            }
+            315 -> {
+                // not assigned
+            }
+            -1 -> {
+                // not assigned
+            }
+        }
+    }
+
 
 }

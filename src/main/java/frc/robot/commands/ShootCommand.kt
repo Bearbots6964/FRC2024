@@ -3,6 +3,7 @@ package frc.robot.commands
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.subsystems.shooter.Shooter
 import java.util.function.DoubleSupplier
+import kotlin.math.pow
 
 /**
  *
@@ -12,9 +13,11 @@ class ShootCommand(
     private val speed: DoubleSupplier,
     private val shooterIsRunning: () -> Unit,
     private val shooterIsNotRunning: () -> Unit,
+    private val leftTrigger: DoubleSupplier,
 ) : Command() {
 
     val maxRpm = 3500.0
+
     init {
         // each subsystem used by the command must be passed into the
         // addRequirements() method (which takes a vararg of Subsystem)
@@ -31,8 +34,11 @@ class ShootCommand(
      *
      */
     override fun execute() {
-        shooter.setVelocity(Math.pow(speed.asDouble, 2.00) * maxRpm, Math.pow(speed.asDouble, 2.00) * maxRpm)
-        if(speed.asDouble > 0.05) {
+        if (leftTrigger.asDouble >= 0.95) {
+            shooter.setVelocity(0.75 * maxRpm, 0.75 * maxRpm)
+        } else
+            shooter.setVelocity(speed.asDouble.pow(2.00) * maxRpm, speed.asDouble.pow(2.00) * maxRpm)
+        if (speed.asDouble > 0.05) {
             shooterIsRunning()
         } else {
             shooterIsNotRunning()

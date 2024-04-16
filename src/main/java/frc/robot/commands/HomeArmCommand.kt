@@ -3,14 +3,12 @@ package frc.robot.commands
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.subsystems.ArmSubsystem
 
-class HomeArmCommand(armSubsystem: ArmSubsystem) : Command() {
-    private val armSubsystem: ArmSubsystem
+class HomeArmCommand(private val armSubsystem: ArmSubsystem) : Command() {
+    // each subsystem used by the command must be passed into the addRequirements() method
     private var numTimesAtPos = 0
     private var angle = 35.0
 
     init {
-        // each subsystem used by the command must be passed into the addRequirements() method
-        this.armSubsystem = armSubsystem
         addRequirements(this.armSubsystem)
     }
 

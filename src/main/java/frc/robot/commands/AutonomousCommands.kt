@@ -10,7 +10,7 @@ import frc.robot.util.Constants
 
 // this all feels like janky garbage but I think it's gonna score at least 2 points
 
-public class AutonomousCommands(
+class AutonomousCommands(
         swerveSubsystem: SwerveSubsystem,
         armSubsystem: ArmSubsystem,
         shooter: Shooter,
@@ -20,7 +20,7 @@ public class AutonomousCommands(
         addCommands(
                 //swerveSubsystem.getAutonomousCommand("start-to-speaker"),
                 InstantCommand({armSubsystem.moveArmToAngle(50.0)}, armSubsystem),
-                ShootCommand(shooter, {Constants.ShooterConstants.MAX_VELOCITY}, {}, {}),
+                ShootCommand(shooter, {Constants.ShooterConstants.MAX_VELOCITY}, {}, {}, {0.0}),
                 //swerveSubsystem.getAutonomousCommand("speaker-to-note-2"),
                 IntakeCommand(intake),
         )

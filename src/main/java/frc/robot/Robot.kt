@@ -4,6 +4,7 @@
 package frc.robot
 
 import com.pathplanner.lib.pathfinding.Pathfinding
+import edu.wpi.first.net.PortForwarder
 import edu.wpi.first.wpilibj.DataLogManager
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
@@ -28,6 +29,7 @@ class Robot : LoggedRobot() {
     private var autonomousCommand: Command? = null
 
     private var robotContainer: RobotContainer? = null
+    private var hasAlliance = false
     init {
         instance = this
     }
@@ -78,6 +80,15 @@ class Robot : LoggedRobot() {
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.
         robotContainer = RobotContainer()
+        SmartDashboard.putBoolean("Reboot Rio", false)
+
+
+
+
+        for (port in 5800..5808) {
+            PortForwarder.add(port, "10.69.64.11", port)
+            PortForwarder.add(port + 10, "10.69.64.12", port)
+        }
     }
 
     /**
@@ -96,14 +107,34 @@ class Robot : LoggedRobot() {
         CommandScheduler.getInstance().run()
 
 
-        try {
-            RobotContainer.alliance = DriverStation.getAlliance().get()
-        } catch (e: Exception) {
-            println(e)
-            RobotContainer.alliance = DriverStation.Alliance.Blue
+        if(!hasAlliance) {
+
+            try {
+                RobotContainer.alliance = DriverStation.getAlliance().get()
+                hasAlliance = true
+            } catch (e: Exception) {
+                println(e)
+                RobotContainer.alliance = DriverStation.Alliance.Blue
+            }
+            if (RobotContainer.alliance == DriverStation.Alliance.Red) RobotContainer.invert = -1
+            else RobotContainer.invert = 1
         }
-        if (RobotContainer.alliance == DriverStation.Alliance.Red) RobotContainer.invert = -1
-        else RobotContainer.invert = 1
+
+
+        robotContainer?.executePov()
+
+
+        // put the time remaining in the match on the dashboard
+        SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime())
+
+        // send the command scheduler to the dashboard
+        SmartDashboard.putData("Scheduler", CommandScheduler.getInstance())
+
+        if (SmartDashboard.getBoolean("Reboot Rio", false))
+        // Restart the Rio
+            Runtime.getRuntime().exec("reboot")
+
+
 
     }
 
@@ -140,8 +171,8 @@ class Robot : LoggedRobot() {
         if (autonomousCommand != null) {
             (autonomousCommand ?: return).cancel()
         }
-        robotContainer!!.setDriveMode()
-        robotContainer!!.setMotorBrake(true)
+        (robotContainer ?: return).setDriveMode()
+        (robotContainer ?: return).setMotorBrake(true)
     }
 
     /** This function is called periodically during operator control.  */

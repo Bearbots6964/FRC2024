@@ -3,12 +3,12 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot.subsystems
 
-import com.kauailabs.navx.frc.AHRS
 import com.pathplanner.lib.auto.AutoBuilder
 import com.pathplanner.lib.commands.PathPlannerAuto
 import com.pathplanner.lib.path.PathConstraints
 import com.pathplanner.lib.path.PathPlannerPath
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig
+import com.pathplanner.lib.util.PathPlannerLogging
 import com.pathplanner.lib.util.ReplanningConfig
 import edu.wpi.first.math.VecBuilder
 import edu.wpi.first.math.geometry.Pose2d
@@ -20,7 +20,6 @@ import edu.wpi.first.math.trajectory.Trajectory
 import edu.wpi.first.math.util.Units
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.DriverStation.Alliance
-import edu.wpi.first.wpilibj.Filesystem
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
@@ -31,7 +30,6 @@ import org.littletonrobotics.junction.Logger
 import swervelib.SwerveController
 import swervelib.SwerveDrive
 import swervelib.SwerveDriveTest
-import swervelib.math.SwerveMath
 import swervelib.parser.SwerveControllerConfiguration
 import swervelib.parser.SwerveDriveConfiguration
 import swervelib.parser.SwerveParser
@@ -63,7 +61,7 @@ class SwerveSubsystem : SubsystemBase {
     /**
      * Maximum speed of the robot in meters per second, used to limit acceleration.
      */
-    private var maximumSpeed: Double = Units.feetToMeters(120.5)
+    private var maximumSpeed: Double = 5.74
 
     /**
      * Initialize [SwerveDrive] with the directory provided.
@@ -88,8 +86,11 @@ class SwerveSubsystem : SubsystemBase {
         setupPathPlanner()
 
 
-        swerveController.setMaximumAngularVelocity(Math.PI)
 
+        PathPlannerLogging.setLogActivePathCallback { poses: List<Pose2d?>? ->
+            // Do whatever you want with the poses here
+            swerveDrive.field.getObject("path").setPoses(poses)
+        }
     }
 
     /**
@@ -100,6 +101,27 @@ class SwerveSubsystem : SubsystemBase {
      */
     constructor(driveCfg: SwerveDriveConfiguration?, controllerCfg: SwerveControllerConfiguration?) {
         swerveDrive = SwerveDrive(driveCfg, controllerCfg, maximumSpeed)
+    }
+
+    override fun periodic() {
+        val limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-back")
+
+        if (limelightMeasurement.tagCount >= 2 && limelightMeasurement.avgTagDist < 5.0 && enableApriltags) {
+            swerveDrive.addVisionMeasurement(
+                limelightMeasurement.pose, limelightMeasurement.timestampSeconds, VecBuilder.fill(0.7, 0.7, 2576395649.0)
+            )
+        }
+        Logger.recordOutput(
+            "Limelight Pose", limelightMeasurement.pose
+        )
+        Logger.recordOutput("Pose", pose)
+        // PathPlannerLogging.logCurrentPose(getPose());
+
+        swerveDrive.updateOdometry()
+
+
+
+
     }
 
     /**
@@ -114,9 +136,9 @@ class SwerveSubsystem : SubsystemBase {
             HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                 AutonomousConstants.TRANSLATION_PID,  // Translation PID constants
                 AutonomousConstants.ANGLE_PID,  // Rotation PID constants
-                1.0,  // Max module speed, in m/s
+                5.74,  // Max module speed, in m/s
                 swerveDrive.swerveDriveConfiguration.driveBaseRadiusMeters,  // Drive base radius in meters. Distance from robot center to furthest module.
-                ReplanningConfig(true, false) // Default path replanning config. See the API for the options here
+                ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
             ), {
                 // Boolean supplier that controls when the path will be mirrored for the red alliance
                 // This will flip the path being followed to the red side of the field.
@@ -163,7 +185,6 @@ class SwerveSubsystem : SubsystemBase {
      * @return PathFinding command
      */
     fun driveToPose(pose: Pose2d?): Command {
-        lockRotation = true
         // Create the constraints to use while pathfinding
         val constraints = PathConstraints(
             1.0, 1.0, swerveDrive.maximumAngularVelocity, Units.degreesToRadians(720.0)
@@ -346,26 +367,7 @@ class SwerveSubsystem : SubsystemBase {
         swerveDrive.drive(velocity)
     }
 
-    /**
-     *
-     */
-    override fun periodic() {
-        var limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-back")
 
-        if (limelightMeasurement.tagCount >= 2 && limelightMeasurement.avgTagDist < 5.0 && enableApriltags) {
-            swerveDrive.addVisionMeasurement(
-                limelightMeasurement.pose, limelightMeasurement.timestampSeconds, VecBuilder.fill(20.0, 20.0, 2576395649.0)
-            )
-        }
-        Logger.recordOutput(
-            "Limelight Pose", limelightMeasurement.pose
-        )
-        Logger.recordOutput("Pose", pose)
-        // PathPlannerLogging.logCurrentPose(getPose());
-
-        swerveDrive.updateOdometry()
-
-    }
 
     /**
      *

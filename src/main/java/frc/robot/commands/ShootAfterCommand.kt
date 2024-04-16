@@ -3,6 +3,7 @@ package frc.robot.commands
 import edu.wpi.first.wpilibj2.command.Command
 import frc.robot.subsystems.shooter.Shooter
 import java.util.function.DoubleSupplier
+import kotlin.math.pow
 
 /**
  *
@@ -26,7 +27,7 @@ class ShootAfterCommand(private val shooter: Shooter, private val speed: DoubleS
      *
      */
     override fun execute() {
-        shooter.setVelocity(Math.pow(speed.asDouble, 3.00) * maxRpm, Math.pow(speed.asDouble, 3.00) * maxRpm)
+        shooter.setVelocity(speed.asDouble.pow(3.00) * maxRpm, speed.asDouble.pow(3.00) * maxRpm)
         if(speed.asDouble > 0.05) {
             shooterIsRunning()
         } else {

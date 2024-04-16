@@ -2,7 +2,6 @@ package frc.robot.subsystems
 
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 import edu.wpi.first.wpilibj2.command.Subsystem
-import edu.wpi.first.wpilibj2.command.SubsystemBase
 import java.util.function.BooleanSupplier
 
 /**
@@ -30,6 +29,6 @@ private constructor() : Subsystem {
     }
 
     fun setNoteSupplier(supplier: BooleanSupplier) {
-        hasNote = supplier;
+        hasNote = supplier
     }
 }

@@ -197,11 +197,11 @@ object Constants {
         /**
          *
          */
-        val TRANSLATION_PID: PIDConstants = PIDConstants(50.0, 0.0, 5.0)
+        val TRANSLATION_PID: PIDConstants = PIDConstants(0.3, 0.0, 0.0)
         /**
          *
          */
-        val ANGLE_PID: PIDConstants = PIDConstants(50.0, 0.0, 0.0)
+        val ANGLE_PID: PIDConstants = PIDConstants(1.0, 0.0, 0.5)
     }
 
     /**

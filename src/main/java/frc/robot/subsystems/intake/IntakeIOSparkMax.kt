@@ -106,6 +106,12 @@ class IntakeIOSparkMax : IntakeIO {
         rightRollerMotor.set(intakePercent)
         cerealizerMotor.set(cerealizerPercent)
     }
+    override fun set(intakeMotorPercent: Double, intakePercent: Double, cerealizerPercent: Double) {
+        intakeMotor.set(intakeMotorPercent)
+        leftRollerMotor.set(intakePercent)
+        rightRollerMotor.set(intakePercent)
+        cerealizerMotor.set(cerealizerPercent)
+    }
 
     override fun setVelocity(intakeRpm: Double, cerealizerRpm: Double) {
         // clamp the RPM to the max RPM
