@@ -2,7 +2,7 @@ name: Update vendordeps
 on:
   schedule:
     - cron: '0 0 * * *'
-
+disabled
 jobs:
   update:
     runs-on: ubuntu-latest
