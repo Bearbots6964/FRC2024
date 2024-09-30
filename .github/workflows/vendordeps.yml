@@ -30,7 +30,7 @@ jobs:
           ./gradlew vendordep --url=https://frcsdk.reduxrobotics.com/ReduxLib_2024.json
 
       - name: Commit and create PR
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: 'chore(deps): update dependencies'
           branch: chore-deps/update-dependencies
