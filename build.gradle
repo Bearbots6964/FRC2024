@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2024.3.2"
+    id "edu.wpi.first.GradleRIO" version "2025.2.1"
     id "com.peterabeles.gversion" version "1.10.3"
 
     // One of the dumb things about IDEA is that it doesn't download sources and javadoc by default
